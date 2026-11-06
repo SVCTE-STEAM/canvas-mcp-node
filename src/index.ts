@@ -31,10 +31,12 @@ import { registerContentMigrationTools } from "./tools/contentMigrations.js";
 import { registerGroupTools } from "./tools/groups.js";
 import { registerPeerReviewTools } from "./tools/peerReviews.js";
 import { registerAccessibilityTools } from "./tools/accessibility.js";
+import { registerSkillTools, SERVER_INSTRUCTIONS } from "./tools/skills.js";
+import { loadSkills } from "./skills.js";
 import { isCodeExecutionEnabled } from "./featureFlags.js";
 
 const SERVER_NAME = "canvas-mcp-svcte";
-const SERVER_VERSION = "1.0.0";
+const SERVER_VERSION = "1.1.0";
 
 async function pathExists(target: string): Promise<boolean> {
   try {
@@ -53,6 +55,12 @@ async function pathExists(target: string): Promise<boolean> {
 function bundledSchoolConfigPath(): string {
   const here = fileURLToPath(import.meta.url);
   return path.resolve(path.dirname(here), "..", "configs", "generic.json");
+}
+
+/** <install>/skills/<name>/SKILL.md — the teacher workflows bundled in the .mcpb. */
+function bundledSkillsDir(): string {
+  const here = fileURLToPath(import.meta.url);
+  return path.resolve(path.dirname(here), "..", "skills");
 }
 
 /**
@@ -112,10 +120,18 @@ async function main(): Promise<void> {
     );
   }
 
-  const server = new McpServer({
-    name: SERVER_NAME,
-    version: SERVER_VERSION,
-  });
+  const skills = await loadSkills(bundledSkillsDir(), (message) =>
+    process.stderr.write(`[${SERVER_NAME}] ${message}\n`),
+  );
+  process.stderr.write(`[${SERVER_NAME}] loaded ${skills.length} built-in teacher workflow(s)\n`);
+
+  const server = new McpServer(
+    {
+      name: SERVER_NAME,
+      version: SERVER_VERSION,
+    },
+    { instructions: SERVER_INSTRUCTIONS },
+  );
 
   // Phase 2 tools — anonymizer is wired into every student-data tool before
   // those tools become callable (FERPA gate per plan).
@@ -140,6 +156,7 @@ async function main(): Promise<void> {
   registerGroupTools(server, canvas, anonymizer);
   registerPeerReviewTools(server, canvas, anonymizer);
   registerAccessibilityTools(server, canvas);
+  registerSkillTools(server, skills);
   // execute_typescript runs model-written code on the teacher's machine. Off by
   // default for the distributed installer; a power user opts in from the
   // install dialog.

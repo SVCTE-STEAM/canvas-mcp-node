@@ -4,7 +4,7 @@ Project-specific guidance for Claude Code working in this repository.
 
 ## What this project is
 
-Node + TypeScript MCP server for Canvas LMS, **teacher-only**, distributed to SVCTE colleagues as a one-click `.mcpb` (Claude Desktop runs it with its bundled Node — no Python). Forked from Jaymes Dec's `awesome-town/canvas-mcp-node` (remote `upstream`) on branch `svcte-edition`; the extra tool domains (messaging, analytics, peer reviews, accessibility, course content, discussion entries, content migrations, groups) are ports of Vishal Sachdev's Python `vishalsachdev/canvas-mcp` (checked out next door at `../canvas-mcp` for reference). **Generic by default** — the bundled `configs/generic.json` supplies plain lesson/assessment/module-outcomes templates; a school-specific JSON can be chosen in the installer (`SCHOOL_CONFIG`). Skills live in `skills/` and ship separately (`npm run build:skills`).
+Node + TypeScript MCP server for Canvas LMS, **teacher-only**, distributed to SVCTE colleagues as a one-click `.mcpb` (Claude Desktop runs it with its bundled Node — no Python). Forked from Jaymes Dec's `awesome-town/canvas-mcp-node` (remote `upstream`) on branch `svcte-edition`; the extra tool domains (messaging, analytics, peer reviews, accessibility, course content, discussion entries, content migrations, groups) are ports of Vishal Sachdev's Python `vishalsachdev/canvas-mcp` (checked out next door at `../canvas-mcp` for reference). **Generic by default** — the bundled `configs/generic.json` supplies plain lesson/assessment/module-outcomes templates; a school-specific JSON can be chosen in the installer (`SCHOOL_CONFIG`). Teacher workflows (skills) live in `skills/<name>/SKILL.md`, ship inside the `.mcpb`, and are served by the server: `get_skill` (catalog in its description), one MCP prompt per workflow, and `SERVER_INSTRUCTIONS` (`src/skills.ts`, `src/tools/skills.ts`).
 
 ## Core invariants (do not violate)
 
@@ -38,6 +38,7 @@ src/
 ├── anonymizer.ts           # persistent per-course JSON map (the FERPA gate's store)
 ├── featureFlags.ts         # isDeanonymizationAllowed() — operator env gate
 ├── schoolConfig.ts         # zod-validated SCHOOL_CONFIG loader
+├── skills.ts               # loads <install>/skills/*/SKILL.md (frontmatter + body)
 ├── types.ts                # CanvasApiError, CanvasUserLite, AnonMapFile
 ├── tools/                  # one file per domain; each exports register*Tools(server, ...)
 │   ├── toolHelpers.ts      # jsonResult/textResult/errorResult/safeHandler/pickFields
@@ -66,7 +67,8 @@ src/
 │   ├── courseContent.ts    # get_course_structure, syllabus, front page, content overview, bulk_update_pages, files list
 │   ├── discussionEntries.ts# list/get entries, post_discussion_entry, reply_to_discussion_entry
 │   ├── contentMigrations.ts# create_content_migration (course copy), get_content_migration_status
-│   └── groups.ts           # list_groups, check_enrollment
+│   ├── groups.ts           # list_groups, check_enrollment
+│   └── skills.ts           # get_skill + one MCP prompt per bundled workflow; SERVER_INSTRUCTIONS
 ├── workers/
 │   ├── ts_exec_worker.ts   # worker thread entry for execute_typescript
 │   └── network_guard.ts    # default-on outbound network sandbox
@@ -98,8 +100,7 @@ src/
 npm run build              # tsc → dist/
 npm test                   # vitest
 npm run validate:manifest  # check manifest.json against the latest MCPB schema
-npm run build:mcpb         # build the .mcpb installer (gitignored; distribute via GitHub Releases)
-npm run build:skills       # zip each skills/<name>/SKILL.md + one canvas-teaching-skills.plugin
+npm run build:mcpb         # build the single .mcpb (server + skills/ + configs/; gitignored; distribute via GitHub Releases)
 ```
 
 The `.mcpb` is **gitignored**. Distribution path is **GitHub Releases** — see README's "Distributing via GitHub Releases".

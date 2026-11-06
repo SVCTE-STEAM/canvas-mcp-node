@@ -1,6 +1,6 @@
 {
   "name": "canvas-mcp-svcte",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Teacher-only Canvas LMS MCP server (Node + TypeScript) with FERPA pseudonyms, packaged as a one-click .mcpb. Based on awesome-town/canvas-mcp-node.",
   "type": "module",
   "main": "dist/index.js",
@@ -15,9 +15,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "validate:manifest": "mcpb validate manifest.json",
-    "build:skills": "node scripts/build-skills.mjs",
-    "build:all": "npm run build:mcpb && npm run build:skills"
+    "validate:manifest": "mcpb validate manifest.json"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.11.3",

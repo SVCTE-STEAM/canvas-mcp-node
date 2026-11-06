@@ -20,12 +20,14 @@ Built on [Jaymes Dec's canvas-mcp-node](https://github.com/awesome-town/canvas-m
    - Leave the other settings as they are.
 4. Make sure the extension is **enabled**, then start a new chat and ask: *"List my Canvas courses."*
 
-### Add the skills (recommended)
+That's the whole install: one file.
 
-Skills teach Claude *how* to do common teaching jobs well (plan a lesson, run a morning check, QC a course). Download the skill `.zip` files from the release, then in Claude Desktop: **Settings → Capabilities → Skills → Upload skill**, one zip at a time. (Claude Code / Cowork users can install `canvas-teaching-skills.plugin` instead, which contains all of them.)
+### Built-in teaching workflows
 
-| Skill | Say something like… |
-|-------|---------------------|
+The extension includes 14 workflows that teach Claude *how* to do common teaching jobs well — which tools to use, in what order, what to check, and when to stop for your approval. There is nothing extra to install: just ask, and Claude loads the matching workflow on its own. You can also pick one directly from Claude Desktop's **+ → Canvas for Teachers** prompt menu.
+
+| Workflow | Say something like… |
+|----------|---------------------|
 | `canvas-morning-check` | "Morning check for Auto Tech" |
 | `canvas-course-qc` | "Is my Culinary 1 course ready for students?" |
 | `canvas-accessibility-auditor` | "Audit accessibility in Medical Assisting" |
@@ -67,7 +69,7 @@ Skills teach Claude *how* to do common teaching jobs well (plan a lesson, run a 
 
 ---
 
-## What Claude can do (99 tools)
+## What Claude can do (100 tools + 14 workflows)
 
 - **Courses & structure:** list courses, course details, full module/item tree, syllabus, front page, content overview, files list, course copy into a new shell.
 - **Modules & pages:** create/update modules and items; create (draft), edit and delete pages; template-based lesson/assessment pages; bulk page settings.
@@ -101,11 +103,12 @@ Requires Node.js 20+ (22 LTS recommended).
 ```bash
 npm ci
 npm test              # vitest
-npm run build:mcpb    # → build/mcpb/canvas-mcp-svcte-<version>.mcpb
-npm run build:skills  # → build/skills/*.zip and canvas-teaching-skills.plugin
+npm run build:mcpb    # → build/mcpb/canvas-mcp-svcte-<version>.mcpb (server + skills/ + configs/)
 ```
 
-Release: bump `version` in `manifest.json`, `package.json` and `SERVER_VERSION` in `src/index.ts`, build both, and attach the `.mcpb`, the skill zips and the `.plugin` to a GitHub Release.
+Release: bump `version` in `manifest.json`, `package.json` and `SERVER_VERSION` in `src/index.ts`, build, and attach the single `.mcpb` to a GitHub Release.
+
+Workflows live in `skills/<name>/SKILL.md` (YAML frontmatter `name` + `description`, where the description says when to use it). They are bundled into the `.mcpb` and served by the server itself: the `get_skill` tool (whose description carries the catalog, so Claude knows when to load one), one MCP prompt per workflow, and a pointer in the server instructions. To add a workflow, add a folder with a `SKILL.md` and rebuild.
 
 Design notes and invariants: [`CLAUDE.md`](CLAUDE.md). Ideas backlog: [`docs/IDEAS.md`](docs/IDEAS.md). Upstream history and the Python → TypeScript migration: [`docs/MIGRATION.md`](docs/MIGRATION.md).
 

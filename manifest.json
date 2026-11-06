@@ -3,10 +3,10 @@
   "manifest_version": "0.3",
   "name": "canvas-mcp-svcte",
   "display_name": "Canvas for Teachers",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "icon": "icon.png",
-  "description": "Teacher-only Canvas LMS tools for Claude: courses, modules, pages, assignments, rubrics, grading, discussions, messaging, peer reviews, analytics and accessibility.",
-  "long_description": "Canvas for Teachers lets Claude work in your Canvas LMS courses using your own Canvas access token. It is educator-only (no student tools). Student names are replaced with stable pseudonyms (Student 1, Student 2, ...) before anything reaches Claude. Nothing publishes itself: pages, modules, assignments, quizzes and discussions are created as unpublished drafts, and every message to students, discussion post, bulk edit or course copy shows you a preview first and only runs after you approve it. Based on Jaymes Dec's canvas-mcp-node (Franklin School) and Vishal Sachdev's canvas-mcp, both MIT-licensed.",
+  "description": "Teacher-only Canvas LMS tools for Claude, with 14 built-in teaching workflows: planning, grading, discussions, messaging, peer reviews, analytics, course QC and accessibility.",
+  "long_description": "Canvas for Teachers lets Claude work in your Canvas LMS courses using your own Canvas access token. It is educator-only (no student tools) and includes 14 built-in teaching workflows (morning check, course QC, accessibility audit, lesson/module/course/assessment planning, quizzes, rubrics, grading, discussions, peer reviews, course copy) that Claude loads automatically; nothing else to install. Student names are replaced with stable pseudonyms (Student 1, Student 2, ...) before anything reaches Claude. Nothing publishes itself: pages, modules, assignments, quizzes and discussions are created as unpublished drafts, and every message to students, discussion post, bulk edit or course copy shows you a preview first and only runs after you approve it. Based on Jaymes Dec's canvas-mcp-node (Franklin School) and Vishal Sachdev's canvas-mcp, both MIT-licensed.",
   "author": {
     "name": "SVCTE STEAM",
     "url": "https://github.com/SVCTE-STEAM"

@@ -85,6 +85,10 @@ async function main() {
     await copyFile(path.join(repoRoot, "configs", name), path.join(stagingDir, "configs", name));
   }
 
+  // 3b2. Stage the teacher workflows (served by the get_skill tool and as prompts)
+  log("staging skills/");
+  await copyDir(path.join(repoRoot, "skills"), path.join(stagingDir, "skills"));
+
   // 3c. Stage manifest, package.json, README, icon
   log("staging manifest + package.json + README + icon");
   await copyFile(path.join(repoRoot, "manifest.json"), path.join(stagingDir, "manifest.json"));
