@@ -53,3 +53,11 @@ export const DEANON_DENIED_NOTE_MAP =
   "Real names/emails suppressed because the operator has not opted in to de-anonymized output " +
   "(set CANVAS_MCP_ALLOW_DEANONYMIZE=true in the MCP server env and restart). " +
   "Pseudonyms have still been allocated and persisted to disk.";
+
+/**
+ * execute_typescript is registered only when the operator opts in via
+ * CANVAS_MCP_ENABLE_CODE_EXECUTION. Read at startup (tool registration time).
+ */
+export function isCodeExecutionEnabled(): boolean {
+  return readBoolEnv("CANVAS_MCP_ENABLE_CODE_EXECUTION");
+}

@@ -1,0 +1,54 @@
+{
+  "pageTemplates": {
+    "default": {
+      "description": "Plain, accessible page layout: page title heading followed by the freeform body. Applied automatically when create_page is called without an explicit template.",
+      "html": "<h2>{{title}}</h2>\n{{body}}"
+    },
+    "module_outcomes": {
+      "description": "Module Outcomes page: a short intro and an ordered list of what students will be able to do by the end of the module.",
+      "titleFormat": "Module {moduleNumber}: {shortTitle} - Outcomes",
+      "html": "<h2>{{title}}</h2>\n<p>By the end of this module, you will be able to:</p>\n<ol>\n{{slot:outcomes}}\n</ol>",
+      "slots": {
+        "outcomes": {
+          "description": "Ordered-list items (<li>) listing what students will be able to do by the end of the module. Each <li> is one observable outcome starting with an action verb (Design, Build, Evaluate, Analyze, Apply, Troubleshoot, Demonstrate...). Align to industry/CTE standards or competencies where the teacher names them. 4-8 items is typical."
+        }
+      }
+    },
+    "lesson": {
+      "description": "Lesson page: what students learn about and learn to do, then Key Concepts, Resources, Class Tasks, and optional Discussion and Related Assessment sections.",
+      "titleFormat": "Lesson: {name}",
+      "html": "<h2>{{title}}</h2>\n<h3>In this lesson you will learn about</h3>\n{{slot:about}}\n<h3>In this lesson you will learn to</h3>\n{{slot:to}}\n<h3>Key Concepts and Terms</h3>\n{{slot:concepts}}\n<h3>Lesson Resources</h3>\n{{slot:resources}}\n<h3>Class Tasks</h3>\n{{slot:tasks}}\n<!-- SECTION:discussion -->\n<h3>Discussion</h3>\n{{slot:discussion}}\n<!-- /SECTION:discussion -->\n<!-- SECTION:assessment -->\n<h3>Related Assessment</h3>\n{{slot:assessment}}\n<!-- /SECTION:assessment -->",
+      "slots": {
+        "about": { "description": "What students will learn about (the topic / content). 1-2 sentence summary." },
+        "to": { "description": "What skills students will gain: a short bulleted list of can-do statements." },
+        "concepts": { "description": "Key concepts and terms with brief definitions." },
+        "resources": { "description": "Links to readings, videos, websites, tools, or other materials referenced in the lesson." },
+        "tasks": { "description": "Tasks for students to complete during the lesson (include safety notes for lab/shop activities where relevant)." },
+        "discussion": { "description": "Discussion forum link or prompt. Only used when a discussion is part of the lesson." },
+        "assessment": { "description": "Link to a related assessment task (when there is one)." }
+      },
+      "sections": {
+        "discussion": {
+          "default": "omit",
+          "description": "Discussion section. Off by default. Pass include_sections: ['discussion'] when the teacher mentions a discussion or debate."
+        },
+        "assessment": {
+          "default": "include",
+          "description": "Related-assessment section. On by default. Pass omit_sections: ['assessment'] for purely formative lessons."
+        }
+      }
+    },
+    "assessment": {
+      "description": "Assessment page with six blocks: Description, Pre-Work, Structure and Grading (with grade boundaries table), Submission, Time, and Use of AI.",
+      "html": "<h2>{{title}}</h2>\n<h3>Assessment Description</h3>\n{{slot:description}}\n<h3>Pre-Work</h3>\n{{slot:pre_work}}\n<h3>Structure and Grading</h3>\n{{slot:structure_and_grading}}\n<h3>Submission</h3>\n{{slot:submission}}\n<h3>Time</h3>\n{{slot:time}}\n<h3>Use of Artificial Intelligence</h3>\n{{slot:ai_use}}",
+      "slots": {
+        "description": { "description": "What the assessment is: an intro paragraph followed by a numbered or bulleted list of what students will do." },
+        "pre_work": { "description": "What students should have completed BEFORE the assessment: a short paragraph plus a numbered list of prerequisites." },
+        "structure_and_grading": { "description": "Three things in one block: (1) what students should expect (number of questions, points, deliverables), (2) grade weighting (what share of the grading period this is worth, if the teacher says), and (3) a grade boundaries <table> with a header row mapping letter grades (A through F, or the teacher's scale) to point ranges." },
+        "submission": { "description": "How students submit their work (in class, upload to Canvas, demonstration, etc.)." },
+        "time": { "description": "Time allotment, including extended-time accommodations if relevant. For long-term projects, a timeline." },
+        "ai_use": { "description": "Acceptable and unacceptable uses of AI for this assessment, as two bulleted lists. Be explicit and assessment-specific." }
+      }
+    }
+  }
+}

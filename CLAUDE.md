@@ -1,26 +1,29 @@
-# CLAUDE.md — canvas-mcp-node
+# CLAUDE.md — canvas-mcp-node (SVCTE edition)
 
-Project-specific guidance for Claude Code (claude.ai/code) working in this repository. See the parent `Documents/CLAUDE.md` for cross-project conventions (Franklin School context, FERPA, no-auto-publish rule, course-code preference).
+Project-specific guidance for Claude Code working in this repository.
 
 ## What this project is
 
-Node + TypeScript MCP server for Canvas LMS. Replaces the Python `canvas-mcp-fork` for the 30 Canvas tools the `teaching-AIssitant/` skills use. **Generic by default, Franklin via config** — anything school-specific lives in `configs/*.json` and is loaded via `SCHOOL_CONFIG`.
+Node + TypeScript MCP server for Canvas LMS, **teacher-only**, distributed to SVCTE colleagues as a one-click `.mcpb` (Claude Desktop runs it with its bundled Node — no Python). Forked from Jaymes Dec's `awesome-town/canvas-mcp-node` (remote `upstream`) on branch `svcte-edition`; the extra tool domains (messaging, analytics, peer reviews, accessibility, course content, discussion entries, content migrations, groups) are ports of Vishal Sachdev's Python `vishalsachdev/canvas-mcp` (checked out next door at `../canvas-mcp` for reference). **Generic by default** — the bundled `configs/generic.json` supplies plain lesson/assessment/module-outcomes templates; a school-specific JSON can be chosen in the installer (`SCHOOL_CONFIG`). Skills live in `skills/` and ship separately (`npm run build:skills`).
 
 ## Core invariants (do not violate)
 
 1. **FERPA gate.** Every tool that could return real student names anonymizes by default. `anonymous: false` from a caller is **silently overridden** to `true` unless `CANVAS_MCP_ALLOW_DEANONYMIZE=true` is set in the server env. See `src/featureFlags.ts` and `src/tools/users.ts`, `src/tools/assignments.ts`, `src/tools/submissions.ts`, `src/tools/anonymization.ts` for the canonical pattern. Response trimming always consumes the anonymizer's output, never the raw payload (anonymize first, trim second).
-2. **No auto-publish.** `create_page`, `create_quiz`, `create_assignment`, and `create_discussion` force `published: false`. Teachers publish after review. Announcements cannot be drafts — `create_announcement` requires a teacher-confirmed future `delayed_post_at` (≥30 min) instead. This is a cross-project rule (parent `CLAUDE.md`) and applies regardless of school config.
+2. **No auto-publish.** `create_page`, `create_quiz`, `create_assignment`, and `create_discussion` force `published: false`. Teachers publish after review. Announcements cannot be drafts — `create_announcement` requires a teacher-confirmed future `delayed_post_at` (≥30 min) instead. This applies regardless of school config.
 3. **Course-code preferred over numeric id** in user-facing output where both are available.
 4. **Grading writes resolve with `bypassCache` at least once per invocation.** `resolveCourseId(..., { bypassCache: true })` — a course rename mid-session must never silently misroute a write. Single-submission tools re-resolve every call; `bulk_grade_submissions` resolves once and reuses the numeric id for the whole batch.
 5. **`snake_case` for every tool name and zod schema parameter key.** Matches the Python MCP signatures so the user's existing skills don't need parameter renames. Internal TypeScript variables stay camelCase per TS convention.
-6. **The lifted `src/code_api/` is verbatim from `canvas-mcp-fork`.** Don't modify locally except for narrow, documented TS-strict fixes. Bug fixes flow upstream first, then re-lift.
+6. **Preview → token → write for anything outward-facing or bulk.** Messages to students, discussion posts/replies, bulk page edits, syllabus replacement, accessibility fixes, peer-review assignment and course copies use `src/tools/confirmGate.ts`: a call without `confirmation_token` returns `previewResult(...)` and writes nothing; the write only happens on a second call whose arguments hash identically and whose single-use token (15 min) is valid. Never add a boolean `confirm` shortcut.
+7. **Real names are merged server-side, never returned.** Student messaging goes through `src/tools/messagingShared.ts` (`resolveRecipients` refuses non-enrolled ids; `{first_name}` / `{name}` are substituted at send time). No tool result may contain a real student name unless `CANVAS_MCP_ALLOW_DEANONYMIZE` is on.
+8. **`execute_typescript` is opt-in** (`CANVAS_MCP_ENABLE_CODE_EXECUTION`, installer checkbox, default off).
+9. **The lifted `src/code_api/` is verbatim from `canvas-mcp-fork`.** Don't modify locally except for narrow, documented TS-strict fixes. Bug fixes flow upstream first, then re-lift.
 
 ## Generic core vs. school-specific data
 
-The MCP core is generic. The only acceptable boundary for school-specific data is `src/schoolConfig.ts` and the `configs/*.json` files it loads. When tempted to add a Franklin-specific default in `src/`:
+The MCP core is generic. The only acceptable boundary for school-specific data is `src/schoolConfig.ts` and the `configs/*.json` files it loads. When tempted to add a school-specific default in `src/`:
 
 - If it's federal law (FERPA), Canvas API convention, or a sensible default for any school — it's generic. Keep it in core.
-- If only Franklin (or a specific school) would set it — extend `SchoolConfigSchema`, update `configs/franklin.json` AND `configs/example.json`, add tests for both the configured and unconfigured paths.
+- If only a specific school would set it — extend `SchoolConfigSchema`, update `configs/generic.json` (the bundled default) AND `configs/example.json`, add tests for both the configured and unconfigured paths. (`configs/franklin.json` is kept from upstream as a worked example.)
 
 What's currently in the school config: `competencyFramework`, `pageTemplates`, `academicCalendar` (reserved).
 
@@ -53,7 +56,17 @@ src/
 │   ├── anonymization.ts    # create_student_anonymization_map, get_anonymization_status
 │   ├── competencies.ts     # list_competencies (school-config-driven)
 │   ├── school.ts           # get_school_info (school-config-driven)
-│   └── code_exec.ts        # execute_typescript, list_code_api_modules
+│   ├── code_exec.ts        # execute_typescript, list_code_api_modules (opt-in)
+│   ├── confirmGate.ts      # preview → confirmation_token → write gate (shared)
+│   ├── messagingShared.ts  # recipient validation, server-side {first_name} merge, per-student sends (shared)
+│   ├── messaging.ts        # conversations: list/get/unread/mark read, send_conversation, send_bulk_messages_from_list
+│   ├── analytics.ts        # get_assignment_analytics, get_student_analytics
+│   ├── peerReviews.ts      # peer review assignment, completion, comments, quality, reports, reminders
+│   ├── accessibility.ts    # scan_course_content_accessibility, UFIXIT report tools, fix_accessibility_issues
+│   ├── courseContent.ts    # get_course_structure, syllabus, front page, content overview, bulk_update_pages, files list
+│   ├── discussionEntries.ts# list/get entries, post_discussion_entry, reply_to_discussion_entry
+│   ├── contentMigrations.ts# create_content_migration (course copy), get_content_migration_status
+│   └── groups.ts           # list_groups, check_enrollment
 ├── workers/
 │   ├── ts_exec_worker.ts   # worker thread entry for execute_typescript
 │   └── network_guard.ts    # default-on outbound network sandbox
@@ -86,6 +99,7 @@ npm run build              # tsc → dist/
 npm test                   # vitest
 npm run validate:manifest  # check manifest.json against the latest MCPB schema
 npm run build:mcpb         # build the .mcpb installer (gitignored; distribute via GitHub Releases)
+npm run build:skills       # zip each skills/<name>/SKILL.md + one canvas-teaching-skills.plugin
 ```
 
 The `.mcpb` is **gitignored**. Distribution path is **GitHub Releases** — see README's "Distributing via GitHub Releases".
@@ -101,4 +115,9 @@ The `.mcpb` is **gitignored**. Distribution path is **GitHub Releases** — see 
 7. Write tests using `buildMockCanvas` + `buildToolHarness`. Cover at least: happy path, error path, and (if applicable) the FERPA-gate-override path.
 8. Register in `src/index.ts`.
 9. Update `README.md` → "Tool reference" with one row.
-10. If a teacher-facing skill in `teaching-AIssitant/` needs to learn about the tool, add a note to `docs/MIGRATION.md`.
+10. If a skill in `skills/` should use the tool, update that SKILL.md.
+11. Outward-facing or bulk write? Use the confirmation gate (invariant 6) and test: preview writes nothing, token required, changed args void it, single use.
+
+On Windows, Node may not be on PATH in agent shells; the maintainer's portable install is `%LOCALAPPDATA%
+ode
+ode-v22.23.4-win-x64`.

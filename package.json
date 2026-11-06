@@ -1,11 +1,11 @@
 {
-  "name": "canvas-mcp-node",
-  "version": "0.5.0",
-  "description": "Node + TypeScript MCP server for Canvas LMS (Franklin School teaching ecosystem)",
+  "name": "canvas-mcp-svcte",
+  "version": "1.0.0",
+  "description": "Teacher-only Canvas LMS MCP server (Node + TypeScript) with FERPA pseudonyms, packaged as a one-click .mcpb. Based on awesome-town/canvas-mcp-node.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "canvas-mcp-node": "dist/index.js"
+    "canvas-mcp-svcte": "dist/index.js"
   },
   "scripts": {
     "build": "tsc",
@@ -15,7 +15,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "validate:manifest": "npx --yes @anthropic-ai/mcpb@latest validate manifest.json"
+    "validate:manifest": "mcpb validate manifest.json",
+    "build:skills": "node scripts/build-skills.mjs",
+    "build:all": "npm run build:mcpb && npm run build:skills"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.11.3",
@@ -25,11 +27,13 @@
     "zod": "^3.24.0"
   },
   "devDependencies": {
+    "@anthropic-ai/mcpb": "2.1.2",
     "@types/node": "^20.0.0",
     "typescript": "^5.7.0",
     "vitest": "^2.0.0"
   },
   "engines": {
     "node": ">=20"
-  }
+  },
+  "license": "MIT"
 }

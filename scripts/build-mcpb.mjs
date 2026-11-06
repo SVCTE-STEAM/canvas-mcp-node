@@ -14,9 +14,9 @@
 import { execSync } from "node:child_process";
 import { promises as fs } from "node:fs";
 import * as path from "node:path";
-import * as os from "node:os";
+import { fileURLToPath } from "node:url";
 
-const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const stagingRoot = path.join(repoRoot, "build", "mcpb");
 const stagingDir = path.join(stagingRoot, "staging");
 
@@ -33,6 +33,7 @@ async function copyDir(src, dest) {
   await fs.mkdir(dest, { recursive: true });
   const entries = await fs.readdir(src, { withFileTypes: true });
   for (const entry of entries) {
+    if (entry.name.startsWith("__user_")) continue;
     const from = path.join(src, entry.name);
     const to = path.join(dest, entry.name);
     if (entry.isDirectory()) {
@@ -61,7 +62,10 @@ async function main() {
   log(`packaging canvas-mcp v${version}`);
 
   // 1. Clean
-  log("cleaning staging dir");
+  log("cleaning dist/ and staging dir");
+  // A stale dist/ can carry execute_typescript temp snippets (__user_*.js)
+  // left behind by killed test workers; never let them reach the bundle.
+  await fs.rm(path.join(repoRoot, "dist"), { recursive: true, force: true });
   await fs.rm(stagingRoot, { recursive: true, force: true });
   await fs.mkdir(stagingDir, { recursive: true });
 
@@ -74,8 +78,12 @@ async function main() {
   await copyDir(path.join(repoRoot, "dist"), path.join(stagingDir, "server"));
 
   // 3b. Stage configs
-  log("staging configs/");
-  await copyDir(path.join(repoRoot, "configs"), path.join(stagingDir, "configs"));
+  // Only the bundled default and the editable example ship; school-specific
+  // presets kept in the repo as worked examples (franklin.json) stay out.
+  log("staging configs/ (generic.json, example.json)");
+  for (const name of ["generic.json", "example.json"]) {
+    await copyFile(path.join(repoRoot, "configs", name), path.join(stagingDir, "configs", name));
+  }
 
   // 3c. Stage manifest, package.json, README, icon
   log("staging manifest + package.json + README + icon");
@@ -83,6 +91,7 @@ async function main() {
   await copyFile(path.join(repoRoot, "package.json"), path.join(stagingDir, "package.json"));
   await copyFile(path.join(repoRoot, "package-lock.json"), path.join(stagingDir, "package-lock.json"));
   await copyFile(path.join(repoRoot, "README.md"), path.join(stagingDir, "README.md"));
+  await copyFile(path.join(repoRoot, "LICENSE"), path.join(stagingDir, "LICENSE"));
   await copyFile(path.join(repoRoot, "icon.png"), path.join(stagingDir, "icon.png"));
 
   // 3d. Install production-only deps in the staging dir
@@ -94,15 +103,14 @@ async function main() {
 
   // 4. Pack
   log("running mcpb pack");
-  const output = path.join(stagingRoot, `canvas-mcp-${version}.mcpb`);
-  run(`npx --yes @anthropic-ai/mcpb@latest pack "${stagingDir}" "${output}"`);
+  const output = path.join(stagingRoot, `canvas-mcp-svcte-${version}.mcpb`);
+  run(`npx --no-install mcpb pack "${stagingDir}" "${output}"`);
 
   const stat = await fs.stat(output);
   const sizeMb = (stat.size / 1024 / 1024).toFixed(2);
   log(`done: ${output} (${sizeMb} MB)`);
   log("");
-  log("Install in Claude Desktop:");
-  log(`  open "${output}"   # macOS — opens Claude Desktop install dialog`);
+  log("Install in Claude Desktop: double-click the .mcpb (Windows/macOS), or drag it onto Settings > Extensions.");
   log("");
 }
 

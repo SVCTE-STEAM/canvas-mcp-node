@@ -1,134 +1,112 @@
-# Canvas for Claude
+# Canvas for Teachers (SVCTE edition)
 
-A drop-in extension that lets Claude actually *do things* in your Canvas LMS — grade submissions, draft lesson pages, build entire modules, find that one rubric you can't remember the name of — instead of just talking about doing them.
+A Claude Desktop extension that lets Claude work in your Canvas courses — draft lesson pages, build modules, grade with rubrics, check on your classes, message students, run accessibility and course-quality checks — while **you approve everything that students will see**.
 
-Built by a teacher. Designed for teachers. **No coding required.**
+- **Teacher-only.** There are no student tools.
+- **One-click install on Windows and Mac.** No Python, no terminal: Claude Desktop runs it with its built-in Node.js.
+- **Student privacy by default.** Claude sees students as `Student 1`, `Student 2`, … never their real names.
 
-> 📥 **[Download the installer](https://github.com/jaymesdec/canvas-mcp-node/releases/latest)** • [The companion skills](https://github.com/jaymesdec/canvas-mcp-skills) • [Get help](https://github.com/jaymesdec/canvas-mcp-node/issues/new)
-
----
-
-## What you can actually do with this
-
-Once it's installed, you can ask Claude things like:
-
-> *"Draft a lesson page on the water cycle for DSGN 9. Students will diagram a local watershed and explain evapotranspiration."*
->
-> *"Grade every submission for the Watershed Quiz. Full credit for naming all three stages, minus 3 for each missing."*
->
-> *"Plan Module 5 of FSV 117 — AI ethics, 4 weeks, weeks 8–11."*
->
-> *"Find the student 'Ricci' across all my courses — which classes is she in?"*
->
-> *"Show me every assignment in DSGN 9 that uses a rubric. Which competencies do the rubrics cover?"*
->
-> *"Download every PDF submission for the watershed test so I can flip through them locally."*
-
-Claude does the Canvas API calls. **You review and approve everything before it goes live.**
+Built on [Jaymes Dec's canvas-mcp-node](https://github.com/awesome-town/canvas-mcp-node) (Franklin School) and [Vishal Sachdev's canvas-mcp](https://github.com/vishalsachdev/canvas-mcp). MIT licensed.
 
 ---
 
-## What stays safe (we mean it)
+## Install (3 minutes)
 
-This tool talks to Canvas with your full admin credentials. Three things we lock down hard:
+1. Download **`canvas-mcp-svcte-<version>.mcpb`** from this repo's [Releases](https://github.com/SVCTE-STEAM/canvas-mcp-node/releases) page (or from wherever your colleague shared it).
+2. **Double-click** the file. Claude Desktop opens an install dialog. (If it doesn't: Claude Desktop → Settings → Extensions → drag the file in.)
+3. Fill in:
+   - **Canvas URL** — your Canvas address, e.g. `https://yourschool.instructure.com`.
+   - **Canvas access token** — in Canvas: *Account → Settings → + New Access Token*. Copy and paste it. It is stored in your computer's keychain and only sent to your Canvas address.
+   - Leave the other settings as they are.
+4. Make sure the extension is **enabled**, then start a new chat and ask: *"List my Canvas courses."*
 
-### Real student names don't reach Claude
+### Add the skills (recommended)
 
-Every list of students comes back as `Student 1`, `Student 2`, `Student 3` — every time. Teachers, TAs, and admins always come through by name. The pseudonyms are **stable across weeks and across conversations**, so longitudinal artifacts (narratives, council reviews, portfolios) reference the same `Student 7` in March that they did in October.
+Skills teach Claude *how* to do common teaching jobs well (plan a lesson, run a morning check, QC a course). Download the skill `.zip` files from the release, then in Claude Desktop: **Settings → Capabilities → Skills → Upload skill**, one zip at a time. (Claude Code / Cowork users can install `canvas-teaching-skills.plugin` instead, which contains all of them.)
 
-If you genuinely need real names for something (looking up a Canvas user_id by name, for instance), there's a server-side env flag you have to flip yourself. Claude *can't* flip it from a tool call, even if asked.
-
-### Nothing publishes itself
-
-- Canvas pages → created as **drafts**, every time
-- Canvas modules → created **unpublished**, every time
-- Canvas assignments, quizzes, and discussions → created **unpublished**, every time
-- Canvas announcements → can't be drafts, so they're always **scheduled**: you confirm a future post time (at least 30 minutes out) and can review or delete before it goes live
-- Grades → written but anchored to your assignment's posting policy. If posting is manual, grades stay hidden until you click Post Grades
-
-The MCP physically can't bypass these — they're enforced at the server level, not just suggested in skill prompts. **You** publish things. Always.
-
-### Your Canvas token stays on your laptop
-
-It's only ever sent to your school's Canvas host. It's never sent to Anthropic, never sent anywhere except your school's `instructure.com` (or wherever your Canvas lives). Treat it like any other admin password and rotate periodically (Canvas → Account → Settings → expire old token, generate a new one, re-run the install dialog).
-
----
-
-## Install in 3 minutes (no terminal needed)
-
-1. **Download** the latest installer: [canvas-mcp-X.Y.Z.mcpb](https://github.com/jaymesdec/canvas-mcp-node/releases/latest) (the `.mcpb` file in the latest release's assets).
-2. **Double-click** the downloaded file. Claude Desktop opens an install dialog.
-3. **Fill in the prompts:**
-   - **Canvas URL** — your school's Canvas, like `https://franklinjc.instructure.com`.
-   - **Canvas access token** — get one from Canvas → Account → Settings → "+ New Access Token". Copy it, paste it into the dialog. It's stored locally.
-   - **Allow real student names** — leave as `false` unless you need it.
-   - **School config** — Franklin teachers: leave the default. Other schools: see [School Configuration](#for-other-schools) below.
-4. **Restart Claude Desktop.** Done.
-
-Need to update? Download the new `.mcpb` from the latest release and double-click. Existing settings carry over.
+| Skill | Say something like… |
+|-------|---------------------|
+| `canvas-morning-check` | "Morning check for Auto Tech" |
+| `canvas-course-qc` | "Is my Culinary 1 course ready for students?" |
+| `canvas-accessibility-auditor` | "Audit accessibility in Medical Assisting" |
+| `canvas-discussion-facilitator` | "Who hasn't posted in this week's discussion?" |
+| `canvas-peer-review-manager` | "How are peer reviews going on the portfolio critique?" |
+| `canvas-course-builder` | "Copy last year's course structure into my new shell" |
+| `plan-lesson` / `post-lesson-page` | "Plan a lesson on brake systems" → "Post it to Canvas" |
+| `plan-assessment` / `post-quiz` | "Draft a 15-question quiz from this lesson page" |
+| `plan-module` / `plan-course` | "Plan a 4-week module on food safety" |
+| `setup-rubric` | "Use the lab report rubric for Assignment 6" |
+| `grade-submissions` | "Grade the knife-skills reflection with the rubric" |
 
 ---
 
-## Your first try
+## What stays safe
 
-Open Claude Desktop and ask:
+**Student names never reach Claude.** Every student comes back as a stable pseudonym (`Student 7` is the same student next week and in every chat). Teachers and TAs appear by name. When you message students, write `{first_name}` and the real name is filled in **on your computer** at send time — Claude still never sees it.
 
-> *"List my Canvas courses."*
+**Nothing publishes itself.**
+- Pages, modules, assignments, quizzes and discussions are created **unpublished**. You publish them in Canvas.
+- Announcements are always **scheduled** at least 30 minutes ahead, so you can review or delete them.
+- Grades follow your assignment's posting policy (manual posting keeps them hidden until you post).
 
-You should see your courses. That confirms everything's working. Now go bigger:
+**Preview, then approve.** Messages to students, discussion posts and replies, bulk page edits, syllabus replacement, accessibility fixes, peer-review assignments and course copies all work in two steps: Claude first gets a **preview** (who, what, how many) and a one-time code, and only after you approve does a second call — with that exact code and the exact same content — do it. If anything changes after the preview, the code stops working.
 
-> *"Plan a lesson on the water cycle for DSGN 9 — about watershed geography. Students will diagram a local watershed."*
+**Your token stays on your computer.** It is only sent to your Canvas address.
 
-Claude (with the `plan-lesson` skill installed — see below) will walk you through it: confirm the course, propose lesson content matching your school's lesson template, surface which competencies it aligns with, and create the draft page in Canvas.
+**Code execution is off.** The advanced `execute_typescript` tool (Claude writing and running code for very large batch jobs) is disabled unless you turn it on in the extension's settings.
 
----
+### Installer settings
 
-## The skills (this is where it gets fun)
-
-The MCP gives Claude the *ability* to do things in Canvas. The [**canvas-mcp-skills**](https://github.com/jaymesdec/canvas-mcp-skills) repo gives Claude the *judgment* to do them well, following pedagogical patterns, school conventions, and reasonable defaults.
-
-Skills included so far:
-
-- **plan-lesson** — draft a single lesson page following the school's lesson template
-- **plan-assessment** — draft a test / quiz / project / essay / presentation page with grade boundaries and AI-use policy
-- **plan-module** — draft a whole module: outcomes, lessons in sequence, summative assessment
-- **plan-course** — draft a whole course's module sequence + foundational pages
-- **grade-submissions** — grade an entire assignment with teacher review
-
-Install instructions are in the [skills repo README](https://github.com/jaymesdec/canvas-mcp-skills#install). It's a `git clone` + `ln -s` or a `cp`; a couple minutes.
+| Setting | Default | Meaning |
+|---------|---------|---------|
+| Canvas URL | — | Your Canvas address. |
+| Canvas access token | — | Your personal token (stored in the OS keychain). |
+| Allow real student names in Claude's view | Off | Turn on only for a task that truly needs real names, then off again. |
+| School config file | (blank) | Optional JSON with your school's competency framework and page templates. Blank = the bundled plain templates (`configs/generic.json`). See [`docs/SCHOOL_CONFIG.md`](docs/SCHOOL_CONFIG.md) and [`configs/example.json`](configs/example.json). |
+| Enable execute_typescript | Off | Advanced batch scripting. |
 
 ---
 
-## For other schools
+## What Claude can do (99 tools)
 
-Built at Franklin School (Jersey City, NJ), but every school-specific piece — the competency framework, the lesson and assessment page templates, the module naming convention — lives in a single JSON config file. Other schools fork it.
+- **Courses & structure:** list courses, course details, full module/item tree, syllabus, front page, content overview, files list, course copy into a new shell.
+- **Modules & pages:** create/update modules and items; create (draft), edit and delete pages; template-based lesson/assessment pages; bulk page settings.
+- **Assignments, quizzes & rubrics:** create (draft) and update assignments; New Quizzes with questions; find, create and attach rubrics.
+- **Grading:** grade one submission, grade with a rubric, bulk-grade with a dry run; read submissions and rubric assessments; download attachments.
+- **Discussions & announcements:** list/read topics and entries (names pseudonymized), create draft topics, reply and post (preview first), scheduled announcements.
+- **Messaging:** inbox, conversations, unread count; personalized messages to students (preview first).
+- **Analytics:** assignment analytics (submission rates, score stats, who's missing) and student analytics.
+- **Peer reviews:** assignments, completion, follow-up lists, comment quality, problem reviews, reports, reminders.
+- **Accessibility:** scan pages/assignments for common WCAG issues, UFIXIT report parsing, safe mechanical fixes (preview first).
+- **People:** roster and enrollments (pseudonymized), groups.
 
-**To use this at your school:**
-
-1. Copy `configs/example.json` from the unpacked `.mcpb` (or from this repo).
-2. Edit it for your competencies (your school's "21st Century Skills" or "Habits of Mind" or whatever) and your page template HTML.
-3. In the install dialog, point the **School config** field at your edited file.
-4. Restart Claude Desktop.
-
-Full guide: [`docs/SCHOOL_CONFIG.md`](docs/SCHOOL_CONFIG.md).
-
----
-
-## Going deeper
-
-- **[Every tool Claude can call](docs/REFERENCE.md)** — full tool catalog with parameters, behavior notes, security model, troubleshooting, architecture
-- **[School configuration guide](docs/SCHOOL_CONFIG.md)** — how the school JSON works, what fields are available, how to add page templates, how to extend it later
-- **[Migration guide](docs/MIGRATION.md)** — for teachers moving from the Python `canvas-mcp-fork` to this version
-- **[Contributor notes](CLAUDE.md)** — invariants, code structure, the never-publish rule, the FERPA gate, how to add a new tool
+Ask Claude *"What can the Canvas tools do?"* for the full list.
 
 ---
 
-## Need help?
+## Troubleshooting
 
-- **Something not working?** Open an issue: [github.com/jaymesdec/canvas-mcp-node/issues](https://github.com/jaymesdec/canvas-mcp-node/issues/new)
-- **Want to know what's possible?** Just ask Claude — *"what can the Canvas MCP do?"* — it'll list the tools and walk through use cases.
-- **Want to contribute or fork?** The whole thing is MIT-licensed. PRs welcome.
+- **"Missing required environment variable"** — open Settings → Extensions → Canvas for Teachers and fill in the URL and token.
+- **401 / Unauthorized** — the token was mistyped or has expired; make a new one in Canvas.
+- **"requires account-admin scope"** — that tool needs a Canvas admin token; teacher tokens can't use it.
+- **A preview keeps coming back instead of sending** — that's by design until you approve; Claude must call again with the `confirmation_token` and the identical content.
+- Logs: Claude Desktop → Settings → Developer → open logs folder (`mcp-server-canvas-mcp-svcte.log`).
 
 ---
 
-Made by **Jaymes Dec @ Franklin School, Jersey City, NJ.**
+## For maintainers
+
+Requires Node.js 20+ (22 LTS recommended).
+
+```bash
+npm ci
+npm test              # vitest
+npm run build:mcpb    # → build/mcpb/canvas-mcp-svcte-<version>.mcpb
+npm run build:skills  # → build/skills/*.zip and canvas-teaching-skills.plugin
+```
+
+Release: bump `version` in `manifest.json`, `package.json` and `SERVER_VERSION` in `src/index.ts`, build both, and attach the `.mcpb`, the skill zips and the `.plugin` to a GitHub Release.
+
+Design notes and invariants: [`CLAUDE.md`](CLAUDE.md). Ideas backlog: [`docs/IDEAS.md`](docs/IDEAS.md). Upstream history and the Python → TypeScript migration: [`docs/MIGRATION.md`](docs/MIGRATION.md).
+
+To pull improvements from Jaymes's upstream: `git fetch upstream && git merge upstream/main`.

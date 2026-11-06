@@ -1,17 +1,21 @@
 {
   "$schema": "https://raw.githubusercontent.com/anthropics/mcpb/main/schemas/mcpb-manifest-latest.schema.json",
   "manifest_version": "0.3",
-  "name": "canvas-mcp",
-  "display_name": "Canvas LMS",
-  "version": "0.5.0",
+  "name": "canvas-mcp-svcte",
+  "display_name": "Canvas for Teachers",
+  "version": "1.0.0",
   "icon": "icon.png",
-  "description": "FERPA compliant MCP server for Canvas LMS.",
-  "long_description": "FERPA compliant MCP server for Canvas LMS. Read, update, and write Canvas content (courses, modules, pages, quizzes, assignments, rubrics), reads + grades submissions (single and bulk). All from Claude Desktop.",
+  "description": "Teacher-only Canvas LMS tools for Claude: courses, modules, pages, assignments, rubrics, grading, discussions, messaging, peer reviews, analytics and accessibility.",
+  "long_description": "Canvas for Teachers lets Claude work in your Canvas LMS courses using your own Canvas access token. It is educator-only (no student tools). Student names are replaced with stable pseudonyms (Student 1, Student 2, ...) before anything reaches Claude. Nothing publishes itself: pages, modules, assignments, quizzes and discussions are created as unpublished drafts, and every message to students, discussion post, bulk edit or course copy shows you a preview first and only runs after you approve it. Based on Jaymes Dec's canvas-mcp-node (Franklin School) and Vishal Sachdev's canvas-mcp, both MIT-licensed.",
   "author": {
-    "name": "Jaymes Dec @ Franklin School, Jersey City, NJ"
+    "name": "SVCTE STEAM",
+    "url": "https://github.com/SVCTE-STEAM"
   },
+  "homepage": "https://github.com/SVCTE-STEAM/canvas-mcp-node",
+  "documentation": "https://github.com/SVCTE-STEAM/canvas-mcp-node/blob/svcte-edition/README.md",
+  "support": "https://github.com/SVCTE-STEAM/canvas-mcp-node/issues",
   "license": "MIT",
-  "keywords": ["canvas", "lms", "education", "ferpa", "grading", "teaching"],
+  "keywords": ["canvas", "lms", "education", "teachers", "ferpa", "grading"],
   "server": {
     "type": "node",
     "entry_point": "server/index.js",
@@ -23,6 +27,8 @@
         "CANVAS_API_TOKEN": "${user_config.canvas_api_token}",
         "CANVAS_ACCOUNT_ID": "self",
         "CANVAS_MCP_ALLOW_DEANONYMIZE": "${user_config.allow_deanonymize}",
+        "SCHOOL_CONFIG": "${user_config.school_config}",
+        "CANVAS_MCP_ENABLE_CODE_EXECUTION": "${user_config.enable_code_execution}",
         "TS_SANDBOX_BLOCK_OUTBOUND": "true"
       }
     }
@@ -31,26 +37,39 @@
     "canvas_api_url": {
       "type": "string",
       "title": "Canvas URL",
-      "description": "Franklin's Canvas address. Pre-filled — leave as-is unless you've been told otherwise.",
-      "required": true,
-      "default": "https://franklinjc.instructure.com"
+      "description": "Your school's Canvas address, e.g. https://yourschool.instructure.com (copy it from your browser's address bar when you're logged in to Canvas).",
+      "required": true
     },
     "canvas_api_token": {
       "type": "string",
       "title": "Canvas access token",
-      "description": "From Canvas: click your Account avatar → Settings → '+ New Access Token'. Paste the token here. It's stored locally and only sent to your Canvas host — never to Anthropic or anywhere else.",
+      "description": "In Canvas: Account → Settings → '+ New Access Token'. Paste it here. It is stored in your computer's keychain and only ever sent to your Canvas address.",
       "required": true,
       "sensitive": true
     },
     "allow_deanonymize": {
-      "type": "string",
-      "title": "Allow real student names in tool output? (leave false unless you need it)",
-      "description": "By default this MCP returns pseudonyms (Student 1, Student 2, …) for every student — teachers/TAs/admins always come through verbatim. This is the FERPA-safe default. Type 'true' here ONLY for a workflow that genuinely needs real names (e.g., looking up a Canvas user id from a student's actual name). Restart Claude Desktop after changing. Flip it back to blank when you're done.",
+      "type": "boolean",
+      "title": "Allow real student names in Claude's view",
+      "description": "Leave OFF (recommended). When off, Claude only sees pseudonyms like 'Student 3'; messages you send can still greet students by real name using {first_name}, filled in on your computer. Turn on only for a task that truly needs real names, then turn it back off.",
       "required": false,
-      "default": "false"
+      "default": false
+    },
+    "school_config": {
+      "type": "file",
+      "title": "School config file (optional)",
+      "description": "Optional JSON file with your school's competency framework and page templates. Leave blank for generic mode. See configs/example.json in the project repo.",
+      "required": false
+    },
+    "enable_code_execution": {
+      "type": "boolean",
+      "title": "Enable execute_typescript (advanced)",
+      "description": "Lets Claude write and run TypeScript on your computer for very large batch jobs (e.g. grading 100+ submissions). Leave OFF unless you know you need it.",
+      "required": false,
+      "default": false
     }
   },
   "compatibility": {
+    "platforms": ["win32", "darwin"],
     "runtimes": {
       "node": ">=20"
     }

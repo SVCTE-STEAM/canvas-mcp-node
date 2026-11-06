@@ -98,6 +98,31 @@ describe("loadSchoolConfig", () => {
     expect(result?.schoolName).toBe("Via Env");
   });
 
+  it("validates the bundled default configs/generic.json with the slots the planning skills rely on", async () => {
+    const result = await loadSchoolConfig({
+      configPath: path.resolve("configs/generic.json"),
+      warn: (message) => warnings.push(message),
+    });
+    expect(warnings).toEqual([]);
+    expect(result).not.toBeNull();
+    expect(result?.competencyFramework).toBeUndefined();
+    const templates = result?.pageTemplates ?? {};
+    expect(Object.keys(templates).sort()).toEqual(["assessment", "default", "lesson", "module_outcomes"]);
+    expect(Object.keys(templates.lesson?.slots ?? {})).toEqual([
+      "about", "to", "concepts", "resources", "tasks", "discussion", "assessment",
+    ]);
+    expect(Object.keys(templates.assessment?.slots ?? {})).toEqual([
+      "description", "pre_work", "structure_and_grading", "submission", "time", "ai_use",
+    ]);
+    expect(Object.keys(templates.module_outcomes?.slots ?? {})).toEqual(["outcomes"]);
+    for (const template of Object.values(templates)) {
+      expect(template?.html ?? "").not.toMatch(/franklin/i);
+      for (const slot of Object.keys(template?.slots ?? {})) {
+        expect(template?.html).toContain(`{{slot:${slot}}}`);
+      }
+    }
+  });
+
   it("validates the shipped configs/franklin.json", async () => {
     const franklinPath = path.resolve("configs/franklin.json");
     const result = await loadSchoolConfig({

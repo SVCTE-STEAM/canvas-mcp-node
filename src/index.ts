@@ -23,21 +23,18 @@ import { registerDiscussionTools } from "./tools/discussions.js";
 import { registerGradingTools } from "./tools/grading.js";
 import { registerCodeExecutionTools } from "./tools/code_exec.js";
 import { registerAnonymizationTools } from "./tools/anonymization.js";
+import { registerCourseContentTools } from "./tools/courseContent.js";
+import { registerMessagingTools } from "./tools/messaging.js";
+import { registerAnalyticsTools } from "./tools/analytics.js";
+import { registerDiscussionEntryTools } from "./tools/discussionEntries.js";
+import { registerContentMigrationTools } from "./tools/contentMigrations.js";
+import { registerGroupTools } from "./tools/groups.js";
+import { registerPeerReviewTools } from "./tools/peerReviews.js";
+import { registerAccessibilityTools } from "./tools/accessibility.js";
+import { isCodeExecutionEnabled } from "./featureFlags.js";
 
-const SERVER_NAME = "canvas-mcp";
-const SERVER_VERSION = "0.4.6";
-
-/**
- * Where the .mcpb-bundled franklin.json lives relative to the compiled
- * server entry point. Layout inside an installed .mcpb is:
- *   <install>/server/index.js   ← __filename
- *   <install>/configs/franklin.json
- * So we walk one level up from server/ to reach configs/.
- */
-function bundledSchoolConfigPath(): string {
-  const here = fileURLToPath(import.meta.url);
-  return path.resolve(path.dirname(here), "..", "configs", "franklin.json");
-}
+const SERVER_NAME = "canvas-mcp-svcte";
+const SERVER_VERSION = "1.0.0";
 
 async function pathExists(target: string): Promise<boolean> {
   try {
@@ -49,24 +46,29 @@ async function pathExists(target: string): Promise<boolean> {
 }
 
 /**
- * Resolve which school config to load. Tries, in order:
- *   1. SCHOOL_CONFIG env var (when set, non-empty, and points at a readable file)
- *   2. The bundled configs/franklin.json shipped inside the .mcpb
- *   3. null — no school config, MCP runs in generic mode
- *
- * If the env var is set to a path that doesn't resolve (e.g., literal
- * "${__dirname}/configs/franklin.json" when Claude Desktop's substitution
- * doesn't reach inside a user_config default), we log a warning and fall
- * back to the bundled config so Franklin teachers still get their preset.
+ * The bundled unbranded preset (plain lesson / assessment / module-outcomes
+ * templates, no competency framework). Layout inside an installed .mcpb:
+ *   <install>/server/index.js, <install>/configs/generic.json
+ */
+function bundledSchoolConfigPath(): string {
+  const here = fileURLToPath(import.meta.url);
+  return path.resolve(path.dirname(here), "..", "configs", "generic.json");
+}
+
+/**
+ * Resolve the school config: SCHOOL_CONFIG (a teacher-chosen file) wins;
+ * otherwise the bundled generic preset, so the planning skills always find
+ * lesson/assessment templates. Claude Desktop passes an empty string when the
+ * optional file field is left blank, which lands on the bundled preset.
  */
 async function resolveSchoolConfig(): Promise<SchoolConfig | null> {
   const explicit = process.env.SCHOOL_CONFIG?.trim();
-  if (explicit && explicit.length > 0) {
+  if (explicit) {
     if (await pathExists(explicit)) {
       return loadSchoolConfig({ configPath: explicit });
     }
     process.stderr.write(
-      `[${SERVER_NAME}] SCHOOL_CONFIG="${explicit}" did not resolve to a readable file; falling back to the bundled Franklin preset.\n`,
+      `[${SERVER_NAME}] SCHOOL_CONFIG="${explicit}" did not resolve to a readable file; using the bundled generic preset.\n`,
     );
   }
   const bundled = bundledSchoolConfigPath();
@@ -130,7 +132,20 @@ async function main(): Promise<void> {
   registerAnonymizationTools(server, canvas, anonymizer);
   registerCompetencyTools(server, schoolConfig);
   registerSchoolInfoTools(server, schoolConfig);
-  registerCodeExecutionTools(server, anonymizer);
+  registerCourseContentTools(server, canvas);
+  registerMessagingTools(server, canvas, anonymizer);
+  registerAnalyticsTools(server, canvas, anonymizer);
+  registerDiscussionEntryTools(server, canvas, anonymizer);
+  registerContentMigrationTools(server, canvas);
+  registerGroupTools(server, canvas, anonymizer);
+  registerPeerReviewTools(server, canvas, anonymizer);
+  registerAccessibilityTools(server, canvas);
+  // execute_typescript runs model-written code on the teacher's machine. Off by
+  // default for the distributed installer; a power user opts in from the
+  // install dialog.
+  if (isCodeExecutionEnabled()) {
+    registerCodeExecutionTools(server, anonymizer);
+  }
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
