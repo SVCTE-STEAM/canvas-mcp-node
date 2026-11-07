@@ -6,7 +6,7 @@ A Claude Desktop extension that lets Claude work in your Canvas courses — draf
 - **One-click install on Windows and Mac.** No Python, no terminal: Claude Desktop runs it with its built-in Node.js.
 - **Student privacy by default.** Claude sees students as `Student 1`, `Student 2`, … never their real names.
 
-Built on [Jaymes Dec's canvas-mcp-node](https://github.com/awesome-town/canvas-mcp-node) (Franklin School) and [Vishal Sachdev's canvas-mcp](https://github.com/vishalsachdev/canvas-mcp). MIT licensed.
+Built on Vishal Sachdev's [canvas-mcp](https://github.com/vishalsachdev/canvas-mcp) (University of Illinois) and Jaymes Dec's [canvas-mcp-node](https://github.com/awesome-town/canvas-mcp-node) (Franklin School). See [Credits](#credits). MIT licensed.
 
 ---
 
@@ -113,3 +113,39 @@ Workflows live in `skills/<name>/SKILL.md` (YAML frontmatter `name` + `descripti
 Design notes and invariants: [`CLAUDE.md`](CLAUDE.md). Ideas backlog: [`docs/IDEAS.md`](docs/IDEAS.md). Upstream history and the Python → TypeScript migration: [`docs/MIGRATION.md`](docs/MIGRATION.md).
 
 To pull improvements from Jaymes's upstream: `git fetch upstream && git merge upstream/main`.
+
+---
+
+## Credits
+
+This extension exists because two educators built their Canvas tools in the open and shared them. This edition stands on both projects.
+
+**Vishal Sachdev** (University of Illinois Urbana-Champaign) created [canvas-mcp](https://github.com/vishalsachdev/canvas-mcp), the original Python Canvas server that this line of work grew from. This edition adapts from it:
+- the 43 teacher tools for messaging, analytics, peer reviews, accessibility, discussion replies, syllabus and page edits, course copy and groups;
+- the six `canvas-*` workflows: morning check, course QC, accessibility auditor, discussion facilitator, peer review manager and course builder;
+- the preview-then-approve approach for actions that reach students.
+
+Thanks also to the [canvas-mcp contributors](https://github.com/vishalsachdev/canvas-mcp/graphs/contributors).
+
+**Jaymes Dec** (Franklin School, Jersey City, NJ) wrote [canvas-mcp-node](https://github.com/awesome-town/canvas-mcp-node), the Node.js/TypeScript rewrite this repo is forked from, and [canvas-mcp-skills](https://github.com/awesome-town/canvas-mcp-skills). His work provides:
+- the server itself and its one-click `.mcpb` installer;
+- the student-privacy design, with persistent per-course pseudonyms so `Student 7` is always the same student;
+- the rule that nothing publishes itself;
+- page templates and school configs, New Quizzes, and rubric grading;
+- the eight planning and grading workflows: `plan-lesson`, `plan-module`, `plan-course`, `plan-assessment`, `post-lesson-page`, `post-quiz`, `setup-rubric` and `grade-submissions`.
+
+**SVCTE STEAM** assembled this edition. The work covered:
+- cutting it down to a teacher-only tool set;
+- porting Vishal's tools to TypeScript;
+- generic templates in place of Franklin's;
+- a preview gate on messages and bulk edits;
+- serving the workflows from inside the extension;
+- a build that works on Windows.
+
+Built with the [Model Context Protocol TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk) and Anthropic's [MCPB](https://github.com/anthropics/mcpb) bundling tools.
+
+### License
+
+MIT. The [LICENSE](LICENSE) file keeps the copyright notices of Vishal Sachdev, Jaymes Dec and SVCTE STEAM.
+
+Canvas is a trademark of Instructure, Inc., and Claude is a trademark of Anthropic. This is an independent project, not endorsed by either company.

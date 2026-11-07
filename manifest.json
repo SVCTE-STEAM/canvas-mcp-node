@@ -12,7 +12,7 @@
     "url": "https://github.com/SVCTE-STEAM"
   },
   "homepage": "https://github.com/SVCTE-STEAM/canvas-mcp-node",
-  "documentation": "https://github.com/SVCTE-STEAM/canvas-mcp-node/blob/svcte-edition/README.md",
+  "documentation": "https://github.com/SVCTE-STEAM/canvas-mcp-node/blob/main/README.md",
   "support": "https://github.com/SVCTE-STEAM/canvas-mcp-node/issues",
   "license": "MIT",
   "keywords": ["canvas", "lms", "education", "teachers", "ferpa", "grading"],
