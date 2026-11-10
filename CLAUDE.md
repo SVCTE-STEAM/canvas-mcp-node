@@ -62,6 +62,7 @@ src/
 │   ├── messagingShared.ts  # recipient validation, server-side {first_name} merge, per-student sends (shared)
 │   ├── messaging.ts        # conversations: list/get/unread/mark read, send_conversation, send_bulk_messages_from_list
 │   ├── analytics.ts        # get_assignment_analytics, get_student_analytics
+│   ├── outcomes.ts         # get_course_outcomes (read-only: outcome catalog + optional mastery rollups)
 │   ├── peerReviews.ts      # peer review assignment, completion, comments, quality, reports, reminders
 │   ├── accessibility.ts    # scan_course_content_accessibility, UFIXIT report tools, fix_accessibility_issues
 │   ├── courseContent.ts    # get_course_structure, syllabus, front page, content overview, bulk_update_pages, files list

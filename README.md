@@ -69,7 +69,7 @@ The extension includes 14 workflows that teach Claude *how* to do common teachin
 
 ---
 
-## What Claude can do (100 tools + 14 workflows)
+## What Claude can do (101 tools + 14 workflows)
 
 - **Courses & structure:** list courses, course details, full module/item tree, syllabus, front page, content overview, files list, course copy into a new shell.
 - **Modules & pages:** create/update modules and items; create (draft), edit and delete pages; template-based lesson/assessment pages; bulk page settings.
@@ -78,6 +78,7 @@ The extension includes 14 workflows that teach Claude *how* to do common teachin
 - **Discussions & announcements:** list/read topics and entries (names pseudonymized), create draft topics, reply and post (preview first), scheduled announcements.
 - **Messaging:** inbox, conversations, unread count; personalized messages to students (preview first).
 - **Analytics:** assignment analytics (submission rates, score stats, who's missing) and student analytics.
+- **Outcomes (read-only):** the course's learning outcomes with group, description and mastery scale; optionally how many students have mastered each one, and each student's score (pseudonymized).
 - **Peer reviews:** assignments, completion, follow-up lists, comment quality, problem reviews, reports, reminders.
 - **Accessibility:** scan pages/assignments for common WCAG issues, UFIXIT report parsing, safe mechanical fixes (preview first).
 - **People:** roster and enrollments (pseudonymized), groups.

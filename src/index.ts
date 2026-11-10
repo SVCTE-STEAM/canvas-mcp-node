@@ -26,6 +26,7 @@ import { registerAnonymizationTools } from "./tools/anonymization.js";
 import { registerCourseContentTools } from "./tools/courseContent.js";
 import { registerMessagingTools } from "./tools/messaging.js";
 import { registerAnalyticsTools } from "./tools/analytics.js";
+import { registerOutcomeTools } from "./tools/outcomes.js";
 import { registerDiscussionEntryTools } from "./tools/discussionEntries.js";
 import { registerContentMigrationTools } from "./tools/contentMigrations.js";
 import { registerGroupTools } from "./tools/groups.js";
@@ -36,7 +37,7 @@ import { loadSkills } from "./skills.js";
 import { isCodeExecutionEnabled } from "./featureFlags.js";
 
 const SERVER_NAME = "canvas-mcp-svcte";
-const SERVER_VERSION = "1.1.0";
+const SERVER_VERSION = "1.2.0";
 
 async function pathExists(target: string): Promise<boolean> {
   try {
@@ -151,6 +152,7 @@ async function main(): Promise<void> {
   registerCourseContentTools(server, canvas);
   registerMessagingTools(server, canvas, anonymizer);
   registerAnalyticsTools(server, canvas, anonymizer);
+  registerOutcomeTools(server, canvas, anonymizer);
   registerDiscussionEntryTools(server, canvas, anonymizer);
   registerContentMigrationTools(server, canvas);
   registerGroupTools(server, canvas, anonymizer);

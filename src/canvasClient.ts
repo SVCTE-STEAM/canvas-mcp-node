@@ -237,10 +237,18 @@ export class CanvasClient {
    */
   async getPaginated<T>(
     path: string,
-    options: RequestOptions & { maxPages?: number; perPage?: number } = {},
+    options: RequestOptions & { maxPages?: number; perPage?: number; itemsKey?: string } = {},
   ): Promise<PaginatedResult<T>> {
     const maxPages = options.maxPages ?? this.defaultMaxPages;
     const perPage = options.perPage ?? 100;
+    // Some endpoints (outcome_rollups) wrap each page's array in an object; itemsKey names it.
+    const pageItems = (data: unknown): T[] => {
+      const source =
+        options.itemsKey !== undefined && data !== null && typeof data === "object" && !Array.isArray(data)
+          ? (data as Record<string, unknown>)[options.itemsKey]
+          : data;
+      return Array.isArray(source) ? (source as T[]) : [];
+    };
 
     const firstParams = {
       ...(options.params ?? {}),
@@ -248,12 +256,12 @@ export class CanvasClient {
     };
 
     const items: T[] = [];
-    let response = await this.request<T[]>("GET", path, {
+    let response = await this.request<unknown>("GET", path, {
       ...options,
       params: firstParams,
     });
     let pages = 1;
-    if (Array.isArray(response.data)) items.push(...response.data);
+    items.push(...pageItems(response.data));
 
     while (pages < maxPages) {
       const linkHeader = response.headers?.link as string | undefined;
@@ -267,14 +275,14 @@ export class CanvasClient {
         ? nextUrl.slice(this.baseUrl.length)
         : nextUrl;
 
-      response = await this.request<T[]>("GET", followPath, {
+      response = await this.request<unknown>("GET", followPath, {
         headers: options.headers,
         timeoutMs: options.timeoutMs,
         maxRetries: options.maxRetries,
         responseType: options.responseType,
       });
       pages += 1;
-      if (Array.isArray(response.data)) items.push(...response.data);
+      items.push(...pageItems(response.data));
     }
 
     // We hit maxPages — check whether another page existed to set the flag honestly.

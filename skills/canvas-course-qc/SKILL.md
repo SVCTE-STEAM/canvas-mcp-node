@@ -54,6 +54,8 @@ For pages in modules, spot-check suspiciously short ones with `get_page_content`
 
 Build a "typical module" profile from the most common item pattern (e.g. 1 page + 2 assignments + 1 discussion), then flag modules that deviate a lot (a week with 1 item when most have 4).
 
+If the course uses Canvas Outcomes, call `get_course_outcomes` once (no mastery data needed). As **Suggestions**, list outcomes with no mastery threshold, and, once the term is under way, outcomes no student has been assessed on yet (`assessed: false`). Before the term starts, unassessed outcomes are normal; don't flag them. No outcomes at all is fine: many courses don't use the feature.
+
 ### 7. Report
 
 ```
@@ -89,7 +91,7 @@ Offer:
 
 ## Tools used
 
-`list_courses`, `get_course_structure`, `list_assignments`, `get_assignment_details`, `list_all_rubrics`, `get_page_content`, `get_front_page`, `get_syllabus`, `update_assignment`, `update_module`, `bulk_update_pages`.
+`list_courses`, `get_course_structure`, `list_assignments`, `get_assignment_details`, `list_all_rubrics`, `get_page_content`, `get_front_page`, `get_syllabus`, `get_course_outcomes`, `update_assignment`, `update_module`, `bulk_update_pages`.
 
 ## Notes
 

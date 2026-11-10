@@ -1,6 +1,6 @@
 {
   "name": "canvas-mcp-svcte",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Teacher-only Canvas LMS MCP server (Node + TypeScript) with FERPA pseudonyms, packaged as a one-click .mcpb. Based on awesome-town/canvas-mcp-node.",
   "type": "module",
   "main": "dist/index.js",

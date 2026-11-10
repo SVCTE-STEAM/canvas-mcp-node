@@ -144,6 +144,27 @@ describe("CanvasClient.getPaginated", () => {
     expect(requests[1]?.url).toBe("/api/v1/courses?page=2&per_page=100");
   });
 
+  it("collects items from a wrapped array when itemsKey is set", async () => {
+    const { client, requests } = buildClient([
+      {
+        status: 200,
+        data: { rollups: [{ id: 1 }], meta: {} },
+        headers: { link: '<https://canvas.example.com/api/v1/courses/9/outcome_rollups?page=2>; rel="next"' },
+      },
+      { status: 200, data: { rollups: [{ id: 2 }, { id: 3 }] } },
+    ]);
+    const result = await client.getPaginated<{ id: number }>("/api/v1/courses/9/outcome_rollups", { itemsKey: "rollups" });
+    expect(result.items.map((item) => item.id)).toEqual([1, 2, 3]);
+    expect(result.pages).toBe(2);
+    expect(requests[1]?.url).toBe("/api/v1/courses/9/outcome_rollups?page=2");
+  });
+
+  it("ignores a wrapped page when itemsKey is not set", async () => {
+    const { client } = buildClient([{ status: 200, data: { rollups: [{ id: 1 }] } }]);
+    const result = await client.getPaginated("/api/v1/courses/9/outcome_rollups");
+    expect(result.items).toEqual([]);
+  });
+
   it("returns [] for an empty first page without erroring", async () => {
     const { client } = buildClient([{ status: 200, data: [] }]);
     const result = await client.getPaginated("/api/v1/courses");
