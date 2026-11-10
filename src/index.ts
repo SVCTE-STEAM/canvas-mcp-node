@@ -27,6 +27,7 @@ import { registerCourseContentTools } from "./tools/courseContent.js";
 import { registerMessagingTools } from "./tools/messaging.js";
 import { registerAnalyticsTools } from "./tools/analytics.js";
 import { registerOutcomeTools } from "./tools/outcomes.js";
+import { registerOutcomeRubricTools } from "./tools/outcomeRubrics.js";
 import { registerDiscussionEntryTools } from "./tools/discussionEntries.js";
 import { registerContentMigrationTools } from "./tools/contentMigrations.js";
 import { registerGroupTools } from "./tools/groups.js";
@@ -153,6 +154,7 @@ async function main(): Promise<void> {
   registerMessagingTools(server, canvas, anonymizer);
   registerAnalyticsTools(server, canvas, anonymizer);
   registerOutcomeTools(server, canvas, anonymizer);
+  registerOutcomeRubricTools(server, canvas);
   registerDiscussionEntryTools(server, canvas, anonymizer);
   registerContentMigrationTools(server, canvas);
   registerGroupTools(server, canvas, anonymizer);

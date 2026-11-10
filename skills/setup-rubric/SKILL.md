@@ -1,6 +1,6 @@
 ---
 name: setup-rubric
-description: Set up a Canvas rubric for an assessment — by reusing an existing rubric from the course, by adapting an existing one, or by creating a new one. Reuse-first by design, since most courses have rubrics they apply to multiple assignments. Use when the teacher says "add a rubric to this assignment", "create a rubric", "use the [name] rubric for X", "I need a rubric for the lab report", or has an assignment that needs grading criteria. Attaches the rubric to the Assignment/Quiz/Discussion in Canvas; never publishes anything (rubric attachment is a metadata change, not a student-visible publish action).
+description: Set up a Canvas rubric for an assessment — by reusing an existing rubric from the course, by adapting an existing one, by creating a new one, or by building one from the course's Canvas Outcomes. Reuse-first by design, since most courses have rubrics they apply to multiple assignments. Use when the teacher says "add a rubric to this assignment", "create a rubric", "use the [name] rubric for X", "I need a rubric for the lab report", "make a rubric from our outcomes", or has an assignment that needs grading criteria. Attaches the rubric to the Assignment/Quiz/Discussion in Canvas; never publishes anything (rubric attachment is a metadata change, not a student-visible publish action).
 ---
 
 # Setup Rubric
@@ -83,6 +83,14 @@ The summary shows just enough for the teacher to recognize useful rubrics. Full 
 If the course has **no rubrics** (the `list_all_rubrics` response has 0 entries), skip directly to the "Create new" path (step 4) — there's nothing to reuse.
 
 ### 3. Three branches
+
+**Outcomes shortcut.** If the teacher wants the rubric built from the course's Canvas Outcomes ("make a rubric from our outcomes", "use the safety outcomes for this lab"), skip the branches below:
+
+1. Call `get_course_outcomes` and let the teacher pick the outcomes, in the order the rows should appear.
+2. Call `create_rubric_from_outcomes` with those `outcome_ids` and the `assignment_ids`. Show the teacher the preview, which covers the rows and their rating scale, the assignments, anything skipped, and any points change.
+3. Only after the teacher approves, call it again with the same arguments plus the `confirmation_token`.
+4. Ask before setting `use_for_grading: true`. With it, rubric scores become the grade, and Canvas changes the assignment's points to the rubric total.
+5. Assignments that already have a rubric are skipped. To replace one, the teacher removes the old rubric in Canvas first, because replacing it discards the outcome results it recorded.
 
 #### 3a. Reuse path: "Attach #N as-is"
 
@@ -241,6 +249,8 @@ After any of the three paths:
 - **Reuse-first.** Don't go to drafting when an existing rubric fits. Save the teacher time and prevent rubric proliferation.
 
 ## Linkage with other skills
+
+- **Canvas Outcomes** (`get_course_outcomes`, `create_rubric_from_outcomes`): rows built from outcomes are linked to them, so scoring the rubric in SpeedGrader fills the Learning Mastery Gradebook. A rubric written by hand with `create_rubric` is not linked to outcomes.
 
 - **`plan-assessment`** writes a `structure_and_grading` slot on the assessment description page that often describes grading criteria in prose form. When `setup-rubric` runs on an assignment with a matching plan-assessment page (detected via `list_pages` title match), it should read that slot and propose criteria that mirror what the teacher already wrote.
 - **`grade-submissions`** is rubric-aware — when an assignment has an attached rubric, it grades per-criterion. The rubric set up by this skill becomes the grading scaffolding for that workflow. (See `skills/grade-submissions/SKILL.md` step 2 for the rubric-attached grading path.)

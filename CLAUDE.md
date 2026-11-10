@@ -13,7 +13,7 @@ Node + TypeScript MCP server for Canvas LMS, **teacher-only**, distributed to SV
 3. **Course-code preferred over numeric id** in user-facing output where both are available.
 4. **Grading writes resolve with `bypassCache` at least once per invocation.** `resolveCourseId(..., { bypassCache: true })` — a course rename mid-session must never silently misroute a write. Single-submission tools re-resolve every call; `bulk_grade_submissions` resolves once and reuses the numeric id for the whole batch.
 5. **`snake_case` for every tool name and zod schema parameter key.** Matches the Python MCP signatures so the user's existing skills don't need parameter renames. Internal TypeScript variables stay camelCase per TS convention.
-6. **Preview → token → write for anything outward-facing or bulk.** Messages to students, discussion posts/replies, bulk page edits, syllabus replacement, accessibility fixes, peer-review assignment and course copies use `src/tools/confirmGate.ts`: a call without `confirmation_token` returns `previewResult(...)` and writes nothing; the write only happens on a second call whose arguments hash identically and whose single-use token (15 min) is valid. Never add a boolean `confirm` shortcut.
+6. **Preview → token → write for anything outward-facing or bulk.** Messages to students, discussion posts/replies, bulk page edits, syllabus replacement, accessibility fixes, peer-review assignment, outcome rubrics (`create_rubric_from_outcomes`) and course copies use `src/tools/confirmGate.ts`: a call without `confirmation_token` returns `previewResult(...)` and writes nothing; the write only happens on a second call whose arguments hash identically and whose single-use token (15 min) is valid. Never add a boolean `confirm` shortcut.
 7. **Real names are merged server-side, never returned.** Student messaging goes through `src/tools/messagingShared.ts` (`resolveRecipients` refuses non-enrolled ids; `{first_name}` / `{name}` are substituted at send time). No tool result may contain a real student name unless `CANVAS_MCP_ALLOW_DEANONYMIZE` is on.
 8. **`execute_typescript` is opt-in** (`CANVAS_MCP_ENABLE_CODE_EXECUTION`, installer checkbox, default off).
 9. **The lifted `src/code_api/` is verbatim from `canvas-mcp-fork`.** Don't modify locally except for narrow, documented TS-strict fixes. Bug fixes flow upstream first, then re-lift.
@@ -62,7 +62,8 @@ src/
 │   ├── messagingShared.ts  # recipient validation, server-side {first_name} merge, per-student sends (shared)
 │   ├── messaging.ts        # conversations: list/get/unread/mark read, send_conversation, send_bulk_messages_from_list
 │   ├── analytics.ts        # get_assignment_analytics, get_student_analytics
-│   ├── outcomes.ts         # get_course_outcomes (read-only: outcome catalog + optional mastery rollups)
+│   ├── outcomes.ts         # get_course_outcomes (read-only: outcome catalog + optional mastery rollups); shared loadOutcomeCatalog
+│   ├── outcomeRubrics.ts   # create_rubric_from_outcomes (gated; skips assignments that already have a rubric)
 │   ├── peerReviews.ts      # peer review assignment, completion, comments, quality, reports, reminders
 │   ├── accessibility.ts    # scan_course_content_accessibility, UFIXIT report tools, fix_accessibility_issues
 │   ├── courseContent.ts    # get_course_structure, syllabus, front page, content overview, bulk_update_pages, files list

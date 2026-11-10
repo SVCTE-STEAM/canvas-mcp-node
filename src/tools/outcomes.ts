@@ -75,7 +75,7 @@ interface CanvasRollup {
   links?: { user?: number | string | null; status?: string | null } | null;
 }
 
-interface OutcomeEntry {
+export interface OutcomeEntry {
   id: string;
   title: string;
   display_name?: string;
@@ -88,10 +88,6 @@ interface OutcomeEntry {
   calculation_method: string | null;
   calculation_int?: number;
   assessed: boolean | null;
-}
-
-function validationError(message: string): CanvasApiError {
-  return new CanvasApiError({ code: "VALIDATION", message: `${TOOL}: ${message}` });
 }
 
 function round(value: number, digits: number): number {
@@ -149,6 +145,53 @@ function toOutcomeEntry(outcome: CanvasOutcome, group: string | null): OutcomeEn
   };
 }
 
+export function parseNumericIds(tool: string, field: string, raw: Array<string | number>): string[] {
+  const ids = raw.map((id) => String(id).trim());
+  const bad = ids.find((id) => !NUMERIC_ID.test(id));
+  if (bad !== undefined) {
+    throw new CanvasApiError({ code: "VALIDATION", message: `${tool}: ${field} must be numeric Canvas ids (got "${bad}").` });
+  }
+  return ids;
+}
+
+/**
+ * The course's outcomes, once each, in Canvas's link order. With context=course,
+ * Canvas reports the mastery scale that applies here (the account/course scale
+ * when account-level mastery scales are on, else the outcome's own).
+ */
+export async function loadOutcomeCatalog(
+  canvas: CanvasClient,
+  courseId: number,
+  wanted: Set<string> | null,
+): Promise<{ outcomes: OutcomeEntry[]; warnings: string[]; missing: string[]; incomplete: boolean }> {
+  const warnings: string[] = [];
+  const links = await canvas.getPaginated<CanvasOutcomeLink>(`/api/v1/courses/${courseId}/outcome_group_links`, {
+    params: { outcome_style: "full" },
+  });
+  const groups = await canvas.getPaginated<CanvasOutcomeGroup>(`/api/v1/courses/${courseId}/outcome_groups`);
+  if (links.truncated) warnings.push("Canvas returned more outcome links than were fetched; the outcome list is incomplete.");
+  if (groups.truncated) warnings.push("Not every outcome group was fetched; some group paths may be missing.");
+  const groupPath = groupPathResolver(groups.items);
+
+  // An outcome can be linked into several groups of one course; list it once.
+  const outcomes: OutcomeEntry[] = [];
+  const seenOutcomes = new Set<string>();
+  for (const link of links.items) {
+    const outcome = link.outcome;
+    if (!outcome || outcome.id === undefined || outcome.id === null) continue;
+    const id = String(outcome.id);
+    if (seenOutcomes.has(id) || (wanted && !wanted.has(id))) continue;
+    seenOutcomes.add(id);
+    const groupId = link.outcome_group?.id;
+    const resolved = groupId !== undefined && groupId !== null ? groupPath(String(groupId)) : undefined;
+    const fallbackTitle = (link.outcome_group?.title ?? "").trim();
+    const group = resolved !== undefined ? resolved : fallbackTitle;
+    outcomes.push(toOutcomeEntry(outcome, group || null));
+  }
+  const missing = wanted ? [...wanted].filter((id) => !seenOutcomes.has(id)) : [];
+  return { outcomes, warnings, missing, incomplete: links.truncated };
+}
+
 function isPermissionError(error: unknown): boolean {
   return error instanceof CanvasApiError && (error.code === "FORBIDDEN" || error.code === "UNAUTHORIZED");
 }
@@ -168,11 +211,7 @@ export function registerOutcomeTools(server: McpServer, canvas: CanvasClient, an
     async (input) => {
       const args = input as GetCourseOutcomesArgs;
       return safeHandler(TOOL, async () => {
-        const wantedIds = (args.outcome_ids ?? []).map((id) => String(id).trim());
-        const badId = wantedIds.find((id) => !NUMERIC_ID.test(id));
-        if (badId !== undefined) {
-          throw validationError(`outcome_ids must be numeric Canvas ids (got "${badId}").`);
-        }
+        const wantedIds = parseNumericIds(TOOL, "outcome_ids", args.outcome_ids ?? []);
         const wanted = wantedIds.length > 0 ? new Set(wantedIds) : null;
         const mode = args.include_mastery ?? "none";
 
@@ -182,33 +221,10 @@ export function registerOutcomeTools(server: McpServer, canvas: CanvasClient, an
         const warnings: string[] = [];
         if (overridden) warnings.push(DEANON_DENIED_NOTE);
 
-        const links = await canvas.getPaginated<CanvasOutcomeLink>(`/api/v1/courses/${courseId}/outcome_group_links`, {
-          params: { outcome_style: "full" },
-        });
-        const groups = await canvas.getPaginated<CanvasOutcomeGroup>(`/api/v1/courses/${courseId}/outcome_groups`);
-        if (links.truncated) warnings.push("Canvas returned more outcome links than were fetched; the outcome list is incomplete.");
-        if (groups.truncated) warnings.push("Not every outcome group was fetched; some group paths may be missing.");
-        const groupPath = groupPathResolver(groups.items);
-
-        // An outcome can be linked into several groups of one course; list it once.
-        const outcomes: OutcomeEntry[] = [];
-        const seenOutcomes = new Set<string>();
-        for (const link of links.items) {
-          const outcome = link.outcome;
-          if (!outcome || outcome.id === undefined || outcome.id === null) continue;
-          const id = String(outcome.id);
-          if (seenOutcomes.has(id) || (wanted && !wanted.has(id))) continue;
-          seenOutcomes.add(id);
-          const groupId = link.outcome_group?.id;
-          const resolved = groupId !== undefined && groupId !== null ? groupPath(String(groupId)) : undefined;
-          const fallbackTitle = (link.outcome_group?.title ?? "").trim();
-          const group = resolved !== undefined ? resolved : fallbackTitle;
-          outcomes.push(toOutcomeEntry(outcome, group || null));
-        }
-        if (wanted) {
-          const missing = [...wanted].filter((id) => !seenOutcomes.has(id));
-          if (missing.length > 0) warnings.push(`Not linked to this course: outcome id(s) ${missing.join(", ")}.`);
-        }
+        const catalog = await loadOutcomeCatalog(canvas, courseId, wanted);
+        const outcomes = catalog.outcomes;
+        warnings.push(...catalog.warnings);
+        if (catalog.missing.length > 0) warnings.push(`Not linked to this course: outcome id(s) ${catalog.missing.join(", ")}.`);
 
         const groupCount = new Set(outcomes.map((outcome) => outcome.group).filter((group) => group)).size;
         const assessedCount = outcomes.filter((outcome) => outcome.assessed === true).length;
