@@ -3,6 +3,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 import type { CanvasClient } from "../canvasClient.js";
 import { jsonResult, safeHandler } from "./toolHelpers.js";
+import { READS_CANVAS, UPDATES } from "./annotations.js";
 
 const LIST_ALL_RUBRICS_INPUT = {
   course_identifier: z.union([z.string(), z.number()]),
@@ -167,6 +168,7 @@ export function registerRubricTools(server: McpServer, canvas: CanvasClient): vo
   server.registerTool(
     "list_all_rubrics",
     {
+      annotations: READS_CANVAS,
       description:
         "List all rubrics in a Canvas course. Per-course only, matching the Python MCP's signature (rubrics.py:888).",
       inputSchema: LIST_ALL_RUBRICS_INPUT,
@@ -208,6 +210,7 @@ export function registerRubricTools(server: McpServer, canvas: CanvasClient): vo
   server.registerTool(
     "get_rubric_details",
     {
+      annotations: READS_CANVAS,
       description: "Fetch full criterion + rating details for a single Canvas rubric scoped to a course.",
       inputSchema: GET_RUBRIC_DETAILS_INPUT,
     },
@@ -226,6 +229,7 @@ export function registerRubricTools(server: McpServer, canvas: CanvasClient): vo
   server.registerTool(
     "create_rubric",
     {
+      annotations: UPDATES,
       description:
         "Create a new Canvas rubric in a course. Optionally attaches the rubric to an Assignment/Quiz/Discussion in the same call via the associate_with param (saves a round-trip). Bypasses the course-code cache (write path).",
       inputSchema: CREATE_RUBRIC_INPUT,
@@ -266,6 +270,7 @@ export function registerRubricTools(server: McpServer, canvas: CanvasClient): vo
   server.registerTool(
     "create_rubric_association",
     {
+      annotations: UPDATES,
       description:
         "Attach an existing rubric to an Assignment/Quiz/Discussion. Use when reusing a rubric across multiple assessments. Bypasses the course-code cache (write path). To create+associate a NEW rubric in one call, use create_rubric's `associate_with` param instead.",
       inputSchema: CREATE_RUBRIC_ASSOCIATION_INPUT,

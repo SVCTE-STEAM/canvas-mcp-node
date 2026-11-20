@@ -9,6 +9,7 @@ import { CanvasApiError, type CanvasUserLite } from "../types.js";
 import { DEANON_DENIED_NOTE, resolveAnonymous } from "../featureFlags.js";
 import { jsonResult, pickFields, safeHandler } from "./toolHelpers.js";
 import { buildStaffIdSet } from "./roster.js";
+import { READS_CANVAS, SAVES_LOCAL_FILES } from "./annotations.js";
 
 const LIST_SUBMISSIONS_INPUT = {
   course_identifier: z.union([z.string(), z.number()]),
@@ -207,6 +208,7 @@ export function registerSubmissionTools(
   server.registerTool(
     "list_submissions",
     {
+      annotations: READS_CANVAS,
       description:
         "List submissions for a Canvas assignment. Embedded student data is anonymized by default (FERPA gate); set anonymous=false only with CANVAS_MCP_ALLOW_DEANONYMIZE=true on the server.",
       inputSchema: LIST_SUBMISSIONS_INPUT,
@@ -280,6 +282,7 @@ export function registerSubmissionTools(
   server.registerTool(
     "get_submission_rubric_assessment",
     {
+      annotations: READS_CANVAS,
       description:
         "Fetch only the rubric_assessment block for one submission, joined with criterion descriptions from the assignment's rubric for readability.",
       inputSchema: GET_SUBMISSION_RUBRIC_ASSESSMENT_INPUT,
@@ -364,6 +367,7 @@ export function registerSubmissionTools(
   server.registerTool(
     "download_submission_attachment",
     {
+      annotations: SAVES_LOCAL_FILES,
       description:
         "Download a submission's attachments to disk. Streams via the Canvas-provided URL with bearer auth. Defaults target_dir to ./submissions/{courseCode|courseId}/{assignmentId}/.",
       inputSchema: DOWNLOAD_SUBMISSION_ATTACHMENT_INPUT,

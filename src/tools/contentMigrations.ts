@@ -9,6 +9,7 @@ import {
   consumeConfirmationToken,
   previewResult,
 } from "./confirmGate.js";
+import { READS_CANVAS } from "./annotations.js";
 
 const MIGRATION_TYPE = "course_copy_importer";
 
@@ -370,7 +371,7 @@ export function registerContentMigrationTools(server: McpServer, canvas: CanvasC
         "Read one content migration's current progress (one read per call). Call again only when poll_again is true. " +
         "Terminal results include Canvas migration issues; completed_with_issues and failed need teacher review.",
       inputSchema: MIGRATION_STATUS_INPUT,
-      annotations: { readOnlyHint: true },
+      annotations: READS_CANVAS,
     },
     async (input) => {
       const args = input as z.infer<z.ZodObject<typeof MIGRATION_STATUS_INPUT>>;

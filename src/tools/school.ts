@@ -3,6 +3,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { SchoolConfig } from "../schoolConfig.js";
 import { computeAcademicWeek } from "../schoolConfig.js";
 import { jsonResult, safeHandler } from "./toolHelpers.js";
+import { READS_LOCAL } from "./annotations.js";
 
 export function registerSchoolInfoTools(
   server: McpServer,
@@ -11,6 +12,7 @@ export function registerSchoolInfoTools(
   server.registerTool(
     "get_school_info",
     {
+      annotations: READS_LOCAL,
       description:
         "Return the loaded school configuration's metadata — school name, academic calendar (weeks per year, class period minutes, year start date, current academic week), competency framework summary, and configured page templates. Use this to discover school-specific defaults (class period length, current week number) so skills don't have to ask the teacher. Returns a structured 'not configured' response when no SCHOOL_CONFIG is loaded.",
       inputSchema: {},

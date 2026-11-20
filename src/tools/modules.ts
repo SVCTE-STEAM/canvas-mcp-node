@@ -3,6 +3,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 import type { CanvasClient } from "../canvasClient.js";
 import { jsonResult, pickFields, safeHandler } from "./toolHelpers.js";
+import { CREATES, DELETES, READS_CANVAS, UPDATES } from "./annotations.js";
 
 /** Module item types supported in this first cut. The full Canvas enum is larger;
  *  we ship what the planning skills need today and extend on demand. */
@@ -174,6 +175,7 @@ export function registerModuleTools(server: McpServer, canvas: CanvasClient): vo
   server.registerTool(
     "create_module",
     {
+      annotations: CREATES,
       description:
         "Create a new Canvas module in a course. Created as **unpublished** (Canvas's default workflow_state) per the cross-project never-auto-publish rule — teacher publishes manually after reviewing the module and its items. Bypasses the course-code cache so a rename mid-session can't misroute the write.",
       inputSchema: CREATE_MODULE_INPUT,
@@ -220,6 +222,7 @@ export function registerModuleTools(server: McpServer, canvas: CanvasClient): vo
   server.registerTool(
     "list_modules",
     {
+      annotations: READS_CANVAS,
       description: "List Canvas modules for a course. Pass include_items=true to inline each module's items.",
       inputSchema: LIST_MODULES_INPUT,
     },
@@ -244,6 +247,7 @@ export function registerModuleTools(server: McpServer, canvas: CanvasClient): vo
   server.registerTool(
     "update_module",
     {
+      annotations: UPDATES,
       description:
         "Update an existing Canvas module's settings — name, position, prerequisites, sequential progress, unlock date. Only the fields you pass are sent to Canvas; everything else is left untouched. Never changes publish state (per the cross-project never-auto-publish rule) — teacher publishes manually in Canvas. Bypasses the course-code cache so a rename mid-session can't misroute the write.",
       inputSchema: UPDATE_MODULE_INPUT,
@@ -286,6 +290,7 @@ export function registerModuleTools(server: McpServer, canvas: CanvasClient): vo
   server.registerTool(
     "delete_module",
     {
+      annotations: DELETES,
       description:
         "Permanently delete a Canvas module. Removes the module structure only — pages/assignments inside remain in the course. Bypasses the course-code cache (re-resolves every call) so a rename can't misroute the delete. Use for cleaning up wrong/duplicate modules.",
       inputSchema: DELETE_MODULE_INPUT,
@@ -310,6 +315,7 @@ export function registerModuleTools(server: McpServer, canvas: CanvasClient): vo
   server.registerTool(
     "delete_module_item",
     {
+      annotations: DELETES,
       description:
         "Remove a single item from a Canvas module. Deletes the module entry only — the underlying page/assignment/quiz remains in the course. Bypasses the course-code cache (re-resolves every call) so a rename can't misroute the delete.",
       inputSchema: DELETE_MODULE_ITEM_INPUT,
@@ -338,6 +344,7 @@ export function registerModuleTools(server: McpServer, canvas: CanvasClient): vo
   server.registerTool(
     "update_module_item",
     {
+      annotations: UPDATES,
       description:
         "Update a module item's title, position, indent, or new_tab. Only the fields you pass are sent to Canvas. Never touches publish state (per the cross-project never-auto-publish rule — a module item's published flag controls student visibility); teacher publishes manually in Canvas. Bypasses the course-code cache so a rename mid-session can't misroute the write.",
       inputSchema: UPDATE_MODULE_ITEM_INPUT,
@@ -379,6 +386,7 @@ export function registerModuleTools(server: McpServer, canvas: CanvasClient): vo
   server.registerTool(
     "add_module_item",
     {
+      annotations: CREATES,
       description:
         "Add a single item to a Canvas module. content_id is required for Page/Assignment/Quiz; ignored for SubHeader.",
       inputSchema: ADD_MODULE_ITEM_INPUT,

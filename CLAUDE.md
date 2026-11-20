@@ -33,7 +33,8 @@ What's NOT (and must stay generic): FERPA defaults, `CANVAS_MCP_ALLOW_DEANONYMIZ
 
 ```
 src/
-├── index.ts                # entry: loads env + schoolConfig, wires register*Tools
+├── index.ts                # entry: loads env + schoolConfig, calls registerAllTools
+├── registerTools.ts        # registerAllTools: every register*Tools call (shared with tests/toolAnnotations.test.ts)
 ├── canvasClient.ts         # axios-backed; retries, pagination, course-code cache
 ├── anonymizer.ts           # persistent per-course JSON map (the FERPA gate's store)
 ├── featureFlags.ts         # isDeanonymizationAllowed() — operator env gate
@@ -42,6 +43,7 @@ src/
 ├── types.ts                # CanvasApiError, CanvasUserLite, AnonMapFile
 ├── tools/                  # one file per domain; each exports register*Tools(server, ...)
 │   ├── toolHelpers.ts      # jsonResult/textResult/errorResult/safeHandler/pickFields
+│   ├── annotations.ts      # READS_CANVAS / READS_LOCAL / CREATES / UPDATES / DELETES / MARKS / SAVES_LOCAL_FILES / RUNS_CODE
 │   ├── roster.ts           # course roster fetch + staff-id classification (shared FERPA helper)
 │   ├── courses.ts          # list_courses, get_course_details, list_account_courses
 │   ├── modules.ts          # list_modules, create_module, update_module, update_module_item, delete_module, add_module_item, delete_module_item
@@ -111,12 +113,12 @@ The `.mcpb` is **gitignored**. Distribution path is **GitHub Releases** — see 
 
 1. Pick the domain (or create a new file in `src/tools/` if no existing fit).
 2. Snake-case the tool name AND every zod schema parameter key. Match the Python MCP signature exactly if one exists.
-3. Wrap the handler in `safeHandler(...)`. Return structured JSON via `jsonResult(...)` and include a `summary` for the text content.
+3. Give it `annotations:` from `src/tools/annotations.ts` (Claude's connector Permissions tab groups tools as read-only vs write from these; `tests/toolAnnotations.test.ts` fails an unlabeled tool). Wrap the handler in `safeHandler(...)`. Return structured JSON via `jsonResult(...)` and include a `summary` for the text content.
 4. If the tool could return student data: route through the `Anonymizer`, plumb `anonymous` through the env gate, add a `warnings[]` entry on override.
 5. If the tool is a write: bypass the course-code cache.
 6. If the tool is account-scoped: default `account_id` from `CANVAS_ACCOUNT_ID` via `resolveAccountId(...)` and surface a "requires account-admin scope" error on 401/403.
 7. Write tests using `buildMockCanvas` + `buildToolHarness`. Cover at least: happy path, error path, and (if applicable) the FERPA-gate-override path.
-8. Register in `src/index.ts`.
+8. Register in `src/registerTools.ts`.
 9. Update `README.md` → "Tool reference" with one row.
 10. If a skill in `skills/` should use the tool, update that SKILL.md.
 11. Outward-facing or bulk write? Use the confirmation gate (invariant 6) and test: preview writes nothing, token required, changed args void it, single use.

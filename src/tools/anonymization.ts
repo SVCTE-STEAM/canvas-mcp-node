@@ -6,6 +6,7 @@ import type { Anonymizer } from "../anonymizer.js";
 import type { CanvasUserLite } from "../types.js";
 import { jsonResult, safeHandler } from "./toolHelpers.js";
 import { DEANON_DENIED_NOTE_MAP, isDeanonymizationAllowed } from "../featureFlags.js";
+import { READS_LOCAL, SAVES_LOCAL_FILES } from "./annotations.js";
 
 const CREATE_STUDENT_ANONYMIZATION_MAP_INPUT = {
   course_identifier: z.union([z.string(), z.number()]),
@@ -23,6 +24,7 @@ export function registerAnonymizationTools(
   server.registerTool(
     "create_student_anonymization_map",
     {
+      annotations: SAVES_LOCAL_FILES,
       description:
         "Fetch the current student roster for a course and persist (or update) the pseudonym map. Idempotent — only new students get fresh pseudonyms; removed students are marked historical without renumbering. Returns the full real-name ↔ pseudonym mapping so the teacher can identify any 'Student N' in downstream artifacts.",
       inputSchema: CREATE_STUDENT_ANONYMIZATION_MAP_INPUT,
@@ -88,6 +90,7 @@ export function registerAnonymizationTools(
   server.registerTool(
     "get_anonymization_status",
     {
+      annotations: READS_LOCAL,
       description:
         "List every anonymization map file persisted on disk under ANON_MAP_DIR. Reports per-course entry counts and generated_at timestamps. Maps are persistent and per-course — they survive MCP restarts.",
       inputSchema: {},

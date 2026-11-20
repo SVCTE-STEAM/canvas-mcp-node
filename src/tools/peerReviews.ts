@@ -54,6 +54,7 @@ import {
   type ReviewerStats,
   type SubmissionLite,
 } from "./peerReviewCore.js";
+import { CREATES, READS_CANVAS } from "./annotations.js";
 
 // ------------------------------------------------------------------ schemas
 
@@ -67,8 +68,6 @@ const ANONYMOUS = z
   );
 const CRITERIA_JSON = z.union([z.string(), z.record(z.string(), z.unknown())]);
 
-const READ_ONLY = { readOnlyHint: true, openWorldHint: true } as const;
-const WRITE = { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true } as const;
 
 type Id = string | number;
 
@@ -319,7 +318,7 @@ export function registerPeerReviewTools(server: McpServer, canvas: CanvasClient,
       description:
         "List every peer-review assignment for an assignment, grouped by reviewee (whose submission is reviewed), with each reviewer and status (assigned/completed). Student names are pseudonymized by default (FERPA gate).",
       inputSchema: { course_identifier: COURSE_IDENTIFIER, assignment_id: ASSIGNMENT_ID, anonymous: ANONYMOUS },
-      annotations: READ_ONLY,
+      annotations: READS_CANVAS,
     },
     async (input) => {
       const args = input as BaseArgs & { anonymous?: boolean };
@@ -400,7 +399,7 @@ export function registerPeerReviewTools(server: McpServer, canvas: CanvasClient,
         reviewee_id: z.union([z.string(), z.number()]).describe("Canvas user id of the student whose submission is reviewed."),
         confirmation_token: CONFIRMATION_TOKEN_PARAM,
       },
-      annotations: WRITE,
+      annotations: CREATES,
     },
     async (input) => {
       const args = input as BaseArgs & { reviewer_id: Id; reviewee_id: Id; confirmation_token?: string };
@@ -513,7 +512,7 @@ export function registerPeerReviewTools(server: McpServer, canvas: CanvasClient,
           .describe("Include the reviewee's submission metadata (submitted_at, attempt, state). Default false."),
         anonymous: ANONYMOUS,
       },
-      annotations: READ_ONLY,
+      annotations: READS_CANVAS,
     },
     async (input) => {
       const args = input as BaseArgs & {
@@ -619,7 +618,7 @@ export function registerPeerReviewTools(server: McpServer, canvas: CanvasClient,
           .describe("Group students by completion status (default true); false returns one flat list with a status field."),
         anonymous: ANONYMOUS,
       },
-      annotations: READ_ONLY,
+      annotations: READS_CANVAS,
     },
     async (input) => {
       const args = input as BaseArgs & { include_student_details?: boolean; group_by_status?: boolean; anonymous?: boolean };
@@ -696,7 +695,7 @@ export function registerPeerReviewTools(server: McpServer, canvas: CanvasClient,
           .describe("Days past the due date after which follow-up counts as overdue (default 3)."),
         anonymous: ANONYMOUS,
       },
-      annotations: READ_ONLY,
+      annotations: READS_CANVAS,
     },
     async (input) => {
       const args = input as BaseArgs & {
@@ -811,7 +810,7 @@ export function registerPeerReviewTools(server: McpServer, canvas: CanvasClient,
         include_timeline_analysis: z.boolean().optional().describe("Due date and days since due. Default true."),
         anonymous: ANONYMOUS,
       },
-      annotations: READ_ONLY,
+      annotations: READS_CANVAS,
     },
     async (input) => {
       const args = input as BaseArgs & {
@@ -941,7 +940,7 @@ export function registerPeerReviewTools(server: McpServer, canvas: CanvasClient,
             "Default true: pseudonymize names and scrub roster names from comment text. false only takes effect when CANVAS_MCP_ALLOW_DEANONYMIZE=true on the server.",
           ),
       },
-      annotations: READ_ONLY,
+      annotations: READS_CANVAS,
     },
     async (input) => {
       const args = input as BaseArgs & {
@@ -1012,7 +1011,7 @@ export function registerPeerReviewTools(server: McpServer, canvas: CanvasClient,
           .optional()
           .describe("Default true: include metrics, flagged reviews (max 20) and recommendations."),
       },
-      annotations: READ_ONLY,
+      annotations: READS_CANVAS,
     },
     async (input) => {
       const args = input as BaseArgs & { analysis_criteria?: unknown; generate_report?: boolean };
@@ -1062,7 +1061,7 @@ export function registerPeerReviewTools(server: McpServer, canvas: CanvasClient,
           'Optional JSON object: {"min_word_count":10,"generic_phrases":["good job","nice work","looks good"],"max_quality_score":2.0}.',
         ),
       },
-      annotations: READ_ONLY,
+      annotations: READS_CANVAS,
     },
     async (input) => {
       const args = input as BaseArgs & { criteria?: unknown };
@@ -1137,7 +1136,7 @@ export function registerPeerReviewTools(server: McpServer, canvas: CanvasClient,
             "Default true. false only takes effect when CANVAS_MCP_ALLOW_DEANONYMIZE=true on the server.",
           ),
       },
-      annotations: READ_ONLY,
+      annotations: READS_CANVAS,
     },
     async (input) => {
       const args = input as BaseArgs & { output_format?: string; include_analytics?: boolean; anonymize_data?: boolean };
@@ -1248,7 +1247,7 @@ export function registerPeerReviewTools(server: McpServer, canvas: CanvasClient,
           .describe("Request real names (default false). Only honored when CANVAS_MCP_ALLOW_DEANONYMIZE=true."),
         format_type: z.enum(["markdown"]).optional().describe("Only markdown is supported."),
       },
-      annotations: READ_ONLY,
+      annotations: READS_CANVAS,
     },
     async (input) => {
       const args = input as BaseArgs & { report_type?: string; include_student_names?: boolean; format_type?: string };
@@ -1311,7 +1310,7 @@ export function registerPeerReviewTools(server: McpServer, canvas: CanvasClient,
         subject_prefix: z.string().optional().describe(`Subject is "<prefix>: <assignment name>". Default "${DEFAULT_SUBJECT_PREFIX}".`),
         confirmation_token: CONFIRMATION_TOKEN_PARAM,
       },
-      annotations: WRITE,
+      annotations: CREATES,
     },
     async (input) => {
       const args = input as BaseArgs & {
@@ -1417,7 +1416,7 @@ export function registerPeerReviewTools(server: McpServer, canvas: CanvasClient,
         assignment_id: ASSIGNMENT_ID,
         confirmation_token: CONFIRMATION_TOKEN_PARAM,
       },
-      annotations: WRITE,
+      annotations: CREATES,
     },
     async (input) => {
       const args = input as BaseArgs & { confirmation_token?: string };

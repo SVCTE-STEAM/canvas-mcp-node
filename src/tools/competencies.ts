@@ -2,6 +2,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 import type { SchoolConfig } from "../schoolConfig.js";
 import { jsonResult, safeHandler } from "./toolHelpers.js";
+import { READS_LOCAL } from "./annotations.js";
 
 function formatFrameworkText(framework: NonNullable<SchoolConfig["competencyFramework"]>): string {
   const lines = [`${framework.name}:`, ""];
@@ -21,6 +22,7 @@ export function registerCompetencyTools(
   server.registerTool(
     "list_competencies",
     {
+      annotations: READS_LOCAL,
       description:
         "Return the configured school's competency framework (e.g., Franklin's 9 TD Competencies). Reads from the SCHOOL_CONFIG JSON file. Returns a structured 'not configured' response when no framework is loaded — set SCHOOL_CONFIG in the MCP server env to enable.",
       inputSchema: {},

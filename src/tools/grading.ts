@@ -4,6 +4,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CanvasClient } from "../canvasClient.js";
 import { CanvasApiError } from "../types.js";
 import { jsonResult, safeHandler } from "./toolHelpers.js";
+import { UPDATES } from "./annotations.js";
 
 const RUBRIC_ASSESSMENT_VALUE = z.object({
   points: z.number(),
@@ -141,6 +142,7 @@ export function registerGradingTools(server: McpServer, canvas: CanvasClient): v
   server.registerTool(
     "grade_submission",
     {
+      annotations: UPDATES,
       description:
         "Write a posted_grade (and optional comment) to a single submission. No rubric. Bypasses the course-code cache so a rename can't misroute the write.",
       inputSchema: GRADE_SUBMISSION_INPUT,
@@ -162,6 +164,7 @@ export function registerGradingTools(server: McpServer, canvas: CanvasClient): v
   server.registerTool(
     "grade_with_rubric",
     {
+      annotations: UPDATES,
       description:
         "Write a rubric_assessment (per-criterion points + comments) to a single submission. No posted_grade override.",
       inputSchema: GRADE_WITH_RUBRIC_INPUT,
@@ -183,6 +186,7 @@ export function registerGradingTools(server: McpServer, canvas: CanvasClient): v
   server.registerTool(
     "grade_submission_with_rubric",
     {
+      annotations: UPDATES,
       description:
         "Kitchen-sink grading write: posted_grade + rubric_assessment + comment in one Canvas call. Use when both a summary grade and a rubric assessment are needed.",
       inputSchema: GRADE_SUBMISSION_WITH_RUBRIC_INPUT,
@@ -214,6 +218,7 @@ export function registerGradingTools(server: McpServer, canvas: CanvasClient): v
   server.registerTool(
     "bulk_grade_submissions",
     {
+      annotations: UPDATES,
       description:
         "Grade many submissions at once. `grades` is keyed by real Canvas user_id with per-submission { posted_grade?, rubric_assessment?, comment? } decisions. dry_run=true returns would-be payloads without writing. Users with no current submission for the assignment land in skipped[].",
       inputSchema: BULK_GRADE_SUBMISSIONS_INPUT,

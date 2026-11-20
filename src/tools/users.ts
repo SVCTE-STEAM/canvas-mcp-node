@@ -7,6 +7,7 @@ import { CanvasApiError, type CanvasUserLite } from "../types.js";
 import { jsonResult, safeHandler } from "./toolHelpers.js";
 import { DEANON_DENIED_NOTE, resolveAnonymous } from "../featureFlags.js";
 import { resolveAccountId } from "./courses.js";
+import { READS_CANVAS } from "./annotations.js";
 
 const LIST_USERS_INPUT = {
   course_identifier: z.union([z.string(), z.number()]),
@@ -61,6 +62,7 @@ export function registerUserTools(
   server.registerTool(
     "list_users",
     {
+      annotations: READS_CANVAS,
       description:
         "List users enrolled in a Canvas course. Defaults to students only; student names/emails are anonymized by default (FERPA gate). Teachers/TAs/admins are returned verbatim.",
       inputSchema: LIST_USERS_INPUT,
@@ -118,6 +120,7 @@ export function registerUserTools(
   server.registerTool(
     "list_user_enrollments",
     {
+      annotations: READS_CANVAS,
       description:
         "List every Canvas enrollment for a single user across all courses. Surfaces course_id, role, and enrollment_state.",
       inputSchema: LIST_USER_ENROLLMENTS_INPUT,
@@ -152,6 +155,7 @@ export function registerUserTools(
   server.registerTool(
     "list_account_users",
     {
+      annotations: READS_CANVAS,
       description:
         "List users in a Canvas account. Requires account-admin scope. Student-roled results are anonymized by default; unknown-role results default to anonymized for safety.",
       inputSchema: LIST_ACCOUNT_USERS_INPUT,

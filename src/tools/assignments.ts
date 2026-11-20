@@ -8,6 +8,7 @@ import { deriveCourseUrl, jsonResult, pickFields, safeHandler } from "./toolHelp
 import { DEANON_DENIED_NOTE, resolveAnonymous } from "../featureFlags.js";
 import { anonymizeNonStaffCommentAuthors, displaySubmission } from "./submissions.js";
 import { buildStaffIdSet } from "./roster.js";
+import { CREATES, READS_CANVAS, UPDATES } from "./annotations.js";
 
 const LIST_ASSIGNMENTS_INPUT = {
   course_identifier: z.union([z.string(), z.number()]),
@@ -511,6 +512,7 @@ export function registerAssignmentTools(
   server.registerTool(
     "list_assignments",
     {
+      annotations: READS_CANVAS,
       description:
         "List Canvas assignments in a course, trimmed to scheduling/grading fields (descriptions omitted unless include_description=true; published_only=true filters to published). include[]='submission' embeds the user's own (or `student_id`'s) submission. Anonymization wraps any embedded student data by default.",
       inputSchema: LIST_ASSIGNMENTS_INPUT,
@@ -633,6 +635,7 @@ export function registerAssignmentTools(
   server.registerTool(
     "list_assignment_groups",
     {
+      annotations: READS_CANVAS,
       description:
         "List a course's Canvas assignment groups (id, name, position, group_weight) plus the course's apply_assignment_group_weights flag. " +
         "For assessments the group carries the title semantics: the group name IS the {type} in the assessment title format and its group_weight IS the {percent} (Canvas weighted assignment groups) — " +
@@ -681,6 +684,7 @@ export function registerAssignmentTools(
   server.registerTool(
     "create_assignment",
     {
+      annotations: CREATES,
       description:
         "Create a new Canvas assignment as a draft (published is forced false per the cross-project never-auto-publish rule — teacher publishes after review). Bypasses the course-code cache so a rename mid-session can't misroute the write. " +
         "The description is wrapped in the school's 'default' page template automatically; pass template='assessment' for Franklin assessments — discover slot names and the ASMT title format via list_page_templates — or template='none' to skip wrapping. " +
@@ -805,6 +809,7 @@ export function registerAssignmentTools(
   server.registerTool(
     "update_assignment",
     {
+      annotations: UPDATES,
       description:
         "Update fields on an existing Canvas assignment. Sends only the provided fields and never touches the published state. " +
         "Two modes: (1) Simple field update — provided fields (description included) are sent verbatim. " +
@@ -968,6 +973,7 @@ export function registerAssignmentTools(
   server.registerTool(
     "get_assignment_details",
     {
+      annotations: READS_CANVAS,
       description: "Fetch full metadata for a single Canvas assignment (due_at, points_possible, submission_types, ...).",
       inputSchema: GET_ASSIGNMENT_DETAILS_INPUT,
     },
@@ -988,6 +994,7 @@ export function registerAssignmentTools(
   server.registerTool(
     "get_assignment_rubric_details",
     {
+      annotations: READS_CANVAS,
       description:
         "Fetch only the rubric portion of an assignment. Returns { rubric: null, message } when the assignment has no rubric attached.",
       inputSchema: GET_ASSIGNMENT_RUBRIC_DETAILS_INPUT,

@@ -4,6 +4,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 import type { CanvasClient } from "../canvasClient.js";
 import { deriveCourseUrl, jsonResult, pickFields, safeHandler } from "./toolHelpers.js";
+import { CREATES, DELETES, READS_CANVAS, UPDATES } from "./annotations.js";
 
 // This file targets Canvas *New Quizzes* (the /api/quiz/v1 microservice), NOT
 // Classic Quizzes. The tool names and input schemas are deliberately kept
@@ -454,6 +455,7 @@ export function registerQuizTools(server: McpServer, canvas: CanvasClient): void
   server.registerTool(
     "create_quiz",
     {
+      annotations: CREATES,
       description:
         "Create a Canvas New Quiz. Created unpublished per the Franklin no-auto-publish rule — teacher publishes after review. " +
         "Returns the quiz id (which is the Canvas assignment id) and a constructed html_url. " +
@@ -486,6 +488,7 @@ export function registerQuizTools(server: McpServer, canvas: CanvasClient): void
   server.registerTool(
     "create_quiz_question",
     {
+      annotations: CREATES,
       description:
         "Add a single question (item) to an existing New Quiz. Same friendly payload as the Classic tool — the server generates the New Quizzes UUIDs and scoring data. " +
         "Supported question_type: multiple_choice_question, true_false_question, multiple_answers_question, short_answer_question (→ manually-graded essay), essay_question, matching_question (uses matches[]), ordering_question (uses ordering_items[]).",
@@ -518,6 +521,7 @@ export function registerQuizTools(server: McpServer, canvas: CanvasClient): void
   server.registerTool(
     "list_quizzes",
     {
+      annotations: READS_CANVAS,
       description: `List New Quizzes in a Canvas course (id, title, published, points_possible, due_at, html_url). ${NEW_QUIZZES_NOTE}`,
       inputSchema: LIST_QUIZZES_INPUT,
     },
@@ -545,6 +549,7 @@ export function registerQuizTools(server: McpServer, canvas: CanvasClient): void
   server.registerTool(
     "get_quiz",
     {
+      annotations: READS_CANVAS,
       description: `Fetch a New Quiz's settings (title, published, points, due/unlock/lock, instructions, quiz_settings) and its items (trimmed to id, position, points_possible, interaction_type_slug, item_body). ${NEW_QUIZZES_NOTE}`,
       inputSchema: GET_QUIZ_INPUT,
     },
@@ -576,6 +581,7 @@ export function registerQuizTools(server: McpServer, canvas: CanvasClient): void
   server.registerTool(
     "update_quiz",
     {
+      annotations: UPDATES,
       description:
         "Update settings on an existing New Quiz (title, description/instructions, due_at, points_possible, shuffle_answers, shuffle_questions, allowed_attempts, time_limit, show_correct_answers). Never touches published state.",
       inputSchema: UPDATE_QUIZ_INPUT,
@@ -611,6 +617,7 @@ export function registerQuizTools(server: McpServer, canvas: CanvasClient): void
   server.registerTool(
     "update_quiz_question",
     {
+      annotations: UPDATES,
       description:
         "Replace an existing New Quiz item's content (same friendly payload as create_quiz_question). question_id is the item id from get_quiz's items[].id.",
       inputSchema: UPDATE_QUIZ_QUESTION_INPUT,
@@ -643,6 +650,7 @@ export function registerQuizTools(server: McpServer, canvas: CanvasClient): void
   server.registerTool(
     "delete_quiz_question",
     {
+      annotations: DELETES,
       description: "Delete an item from a New Quiz. question_id is the item id from get_quiz's items[].id.",
       inputSchema: DELETE_QUIZ_QUESTION_INPUT,
     },

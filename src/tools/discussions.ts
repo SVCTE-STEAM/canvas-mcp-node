@@ -13,6 +13,7 @@ import {
   type CourseScrubber,
   type DiscussionEntryLike,
 } from "./discussionAnonymizer.js";
+import { CREATES, DELETES, READS_CANVAS, UPDATES } from "./annotations.js";
 
 export const MIN_ANNOUNCEMENT_DELAY_MINUTES = 30;
 // The floor doubles as the clock-skew buffer between this machine and Canvas,
@@ -236,6 +237,7 @@ export function registerDiscussionTools(
   server.registerTool(
     "list_discussions",
     {
+      annotations: READS_CANVAS,
       description:
         "List discussion topics in a Canvas course (announcements are excluded — use list_announcements). Returns trimmed topics: id, title, published, posted_at, discussion_type, locked, pinned, delayed_post_at, reply_count.",
       inputSchema: LIST_DISCUSSIONS_INPUT,
@@ -264,6 +266,7 @@ export function registerDiscussionTools(
   server.registerTool(
     "get_discussion",
     {
+      annotations: READS_CANVAS,
       description:
         "Fetch one discussion topic and (by default) its entries. Also fetches announcements by topic_id — announcements are discussion topics under the hood, so this is the tool for reading an announcement's message body. Entries come from the paginated /entries endpoint rather than /view — /view can 503 while its cache builds and 403s on require_initial_post topics even for a teacher token. " +
         "Student entry authors are pseudonymized and roster names are scrubbed from the topic body and every entry body by default (FERPA gate); set anonymous=false only with CANVAS_MCP_ALLOW_DEANONYMIZE=true on the server.",
@@ -363,6 +366,7 @@ export function registerDiscussionTools(
   server.registerTool(
     "create_discussion",
     {
+      annotations: CREATES,
       description:
         "Create a NEW Canvas discussion topic as an unpublished draft — published is forced false per the no-auto-publish rule; the teacher publishes after review. Body is sent verbatim (no page-template wrapping — discussion topics, not wiki pages). For announcements use create_announcement.",
       inputSchema: CREATE_DISCUSSION_INPUT,
@@ -393,6 +397,7 @@ export function registerDiscussionTools(
   server.registerTool(
     "update_discussion",
     {
+      annotations: UPDATES,
       description:
         "Update an existing Canvas discussion topic (partial: only provided fields are sent). Refuses announcements — use update_announcement, which enforces the scheduling floor. published accepts only false (revert to draft); publishing stays manual in Canvas.",
       inputSchema: UPDATE_DISCUSSION_INPUT,
@@ -442,6 +447,7 @@ export function registerDiscussionTools(
   server.registerTool(
     "list_announcements",
     {
+      annotations: READS_CANVAS,
       description:
         "List a course's announcements via discussion_topics?only_announcements=true — unlike GET /api/v1/announcements this has no ±14-day window, so scheduled (post_delayed) announcements appear with their delayed_post_at. Message bodies are omitted for payload weight — use get_discussion with the topic_id to read a message body.",
       inputSchema: LIST_ANNOUNCEMENTS_INPUT,
@@ -471,6 +477,7 @@ export function registerDiscussionTools(
   server.registerTool(
     "create_announcement",
     {
+      annotations: CREATES,
       description:
         "Create a SCHEDULED Canvas announcement. Announcements cannot be drafts, so delayed_post_at is REQUIRED: an ISO-8601 timestamp with an explicit offset or Z, at least the delay floor (default 30 minutes, CANVAS_MCP_MIN_ANNOUNCEMENT_DELAY_MINUTES to override, clamped to >=5) in the future. Missing/past/near/offset-less timestamps fail before any Canvas call. If Canvas reports the announcement went live immediately anyway, the tool deletes it best-effort and raises an error.",
       inputSchema: CREATE_ANNOUNCEMENT_INPUT,
@@ -525,6 +532,7 @@ export function registerDiscussionTools(
   server.registerTool(
     "update_announcement",
     {
+      annotations: UPDATES,
       description:
         "Update an existing Canvas announcement (partial: only provided fields are sent). A new delayed_post_at obeys the same offset + delay-floor rules as create_announcement; null/empty is rejected because Canvas clears the delay on empty, posting immediately. WARNING: edits to an announcement whose post time has passed are live edits visible to students.",
       inputSchema: UPDATE_ANNOUNCEMENT_INPUT,
@@ -578,6 +586,7 @@ export function registerDiscussionTools(
   server.registerTool(
     "delete_discussion",
     {
+      annotations: DELETES,
       description:
         "Permanently delete a Canvas discussion topic and its entries. Refuses announcements — use delete_announcement. Bypasses the course-code cache so a rename mid-session can't misroute the delete.",
       inputSchema: DELETE_DISCUSSION_INPUT,
@@ -611,6 +620,7 @@ export function registerDiscussionTools(
   server.registerTool(
     "delete_announcement",
     {
+      annotations: DELETES,
       description:
         "Permanently delete a Canvas announcement — works both before the scheduled post time (cancels it) and after (removes the live announcement). Refuses plain discussions — use delete_discussion. Bypasses the course-code cache so a rename mid-session can't misroute the delete.",
       inputSchema: DELETE_ANNOUNCEMENT_INPUT,

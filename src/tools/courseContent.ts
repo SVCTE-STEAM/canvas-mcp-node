@@ -10,6 +10,7 @@ import {
   previewResult,
 } from "./confirmGate.js";
 import { jsonResult, safeHandler } from "./toolHelpers.js";
+import { READS_CANVAS, UPDATES } from "./annotations.js";
 
 /**
  * Course content read tools (structure, module items, overview, syllabus,
@@ -369,6 +370,7 @@ export function registerCourseContentTools(server: McpServer, canvas: CanvasClie
   server.registerTool(
     "get_course_structure",
     {
+      annotations: READS_CANVAS,
       description:
         "Full module → item tree for a course in one call: publish state, item types, due dates and points, plus summary counts (unpublished modules/items, empty modules, published items hidden inside unpublished modules). The backbone of a course QC pass.",
       inputSchema: GET_COURSE_STRUCTURE_INPUT,
@@ -469,6 +471,7 @@ export function registerCourseContentTools(server: McpServer, canvas: CanvasClie
   server.registerTool(
     "list_module_items",
     {
+      annotations: READS_CANVAS,
       description:
         "List the items in one module (type, publish state, content id / page slug / external URL, and — with content details — due date and points).",
       inputSchema: LIST_MODULE_ITEMS_INPUT,
@@ -511,6 +514,7 @@ export function registerCourseContentTools(server: McpServer, canvas: CanvasClie
   server.registerTool(
     "get_course_content_overview",
     {
+      annotations: READS_CANVAS,
       description:
         "One-call overview of a course's content: page counts (published/unpublished, front page, recently updated), module counts with item types, and a 1000-character syllabus preview. Use get_course_structure for the full module tree and get_syllabus for the full syllabus.",
       inputSchema: GET_COURSE_CONTENT_OVERVIEW_INPUT,
@@ -644,6 +648,7 @@ export function registerCourseContentTools(server: McpServer, canvas: CanvasClie
   server.registerTool(
     "get_syllabus",
     {
+      annotations: READS_CANVAS,
       description:
         "Get the complete Canvas Syllabus tab content for a course (unlike get_course_content_overview's 1000-character preview). output_format: 'text' (default), 'html', or 'both'. Only cut when max_chars is passed, and a cut is flagged.",
       inputSchema: GET_SYLLABUS_INPUT,
@@ -695,6 +700,7 @@ export function registerCourseContentTools(server: McpServer, canvas: CanvasClie
   server.registerTool(
     "update_syllabus",
     {
+      annotations: UPDATES,
       description:
         "Set the Canvas Syllabus tab body. mode 'replace' (default) swaps the whole body; 'append'/'prepend' add to it. Canvas keeps NO revision history for the syllabus, so this is two-step: the first call (no confirmation_token) returns a preview of old vs new and a token, and writes nothing; after the teacher approves, call again with identical arguments plus the token. The token is void if the arguments or the current syllabus change. Bypasses the course-code cache.",
       inputSchema: UPDATE_SYLLABUS_INPUT,
@@ -822,6 +828,7 @@ export function registerCourseContentTools(server: McpServer, canvas: CanvasClie
   server.registerTool(
     "get_front_page",
     {
+      annotations: READS_CANVAS,
       description:
         "Get the course front page (title, slug, publish state, body HTML). Returns has_front_page=false when the course has none set.",
       inputSchema: GET_FRONT_PAGE_INPUT,
@@ -862,6 +869,7 @@ export function registerCourseContentTools(server: McpServer, canvas: CanvasClie
   server.registerTool(
     "update_page_settings",
     {
+      annotations: UPDATES,
       description:
         "Change an existing page's settings without touching its content: unpublish (published=false), front_page, editing_roles, notify_of_update. published=true is refused — this server never publishes; the teacher publishes in Canvas. The page must already exist (Canvas would otherwise create one). Bypasses the course-code cache.",
       inputSchema: UPDATE_PAGE_SETTINGS_INPUT,
@@ -928,6 +936,7 @@ export function registerCourseContentTools(server: McpServer, canvas: CanvasClie
   server.registerTool(
     "bulk_update_pages",
     {
+      annotations: UPDATES,
       description:
         "Change settings on several existing pages at once: unpublish (published=false), editing_roles, notify_of_update. Settings only — no renames or content. published=true is refused (the teacher publishes in Canvas). Two-step: the first call (no confirmation_token) previews each page's current state and the change, writing nothing; after the teacher approves, call again with identical arguments plus the token. Slugs that don't match an existing page are skipped, never created. Bypasses the course-code cache.",
       inputSchema: BULK_UPDATE_PAGES_INPUT,
@@ -1055,6 +1064,7 @@ export function registerCourseContentTools(server: McpServer, canvas: CanvasClie
   server.registerTool(
     "list_course_files",
     {
+      annotations: READS_CANVAS,
       description:
         "List files in a course (metadata only: id, name, size, content type, updated_at, locked/hidden). Optional name search and sort. Use the id with file tools or module items.",
       inputSchema: LIST_COURSE_FILES_INPUT,

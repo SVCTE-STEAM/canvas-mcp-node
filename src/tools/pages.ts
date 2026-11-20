@@ -4,6 +4,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CanvasClient } from "../canvasClient.js";
 import { applyPageTemplate, type SchoolConfig } from "../schoolConfig.js";
 import { deriveCourseUrl, jsonResult, safeHandler } from "./toolHelpers.js";
+import { CREATES, DELETES, READS_CANVAS, READS_LOCAL, UPDATES } from "./annotations.js";
 
 const LIST_PAGES_INPUT = {
   course_identifier: z.union([z.string(), z.number()]),
@@ -121,6 +122,7 @@ export function registerPageTools(
   server.registerTool(
     "list_pages",
     {
+      annotations: READS_CANVAS,
       description: "List wiki pages in a Canvas course (slug, title, published flag, updated_at).",
       inputSchema: LIST_PAGES_INPUT,
     },
@@ -153,6 +155,7 @@ export function registerPageTools(
   server.registerTool(
     "get_page_content",
     {
+      annotations: READS_CANVAS,
       description: "Fetch the full body and metadata of a Canvas wiki page by url slug.",
       inputSchema: GET_PAGE_CONTENT_INPUT,
     },
@@ -171,6 +174,7 @@ export function registerPageTools(
   server.registerTool(
     "create_page",
     {
+      annotations: CREATES,
       description:
         "Create a NEW Canvas wiki page. **For changes to an existing page (adding a section, swapping content, etc.), use edit_page_content instead — create_page on an existing title creates a duplicate with a -2/-3 slug.** " +
         "published is forced false per Franklin School cross-project rule — teacher publishes after review. " +
@@ -257,6 +261,7 @@ export function registerPageTools(
   server.registerTool(
     "edit_page_content",
     {
+      annotations: UPDATES,
       description:
         "Update an existing Canvas wiki page (use this, not create_page, for any change to a page that already exists). " +
         "Two modes: " +
@@ -392,6 +397,7 @@ export function registerPageTools(
   server.registerTool(
     "delete_page",
     {
+      annotations: DELETES,
       description:
         "Permanently delete a Canvas wiki page. Bypasses the course-code cache (re-resolves every call) so a rename can't misroute the delete. Use for cleaning up orphan/test/duplicate pages.",
       inputSchema: DELETE_PAGE_INPUT,
@@ -414,6 +420,7 @@ export function registerPageTools(
   server.registerTool(
     "list_page_templates",
     {
+      annotations: READS_LOCAL,
       description:
         "List the named page templates configured in the school config — including their slot names (multi-section content holes) and optional sections (default include/omit state). Returns names + descriptions only; the full HTML stays server-side to keep Claude's context light.",
       inputSchema: {},

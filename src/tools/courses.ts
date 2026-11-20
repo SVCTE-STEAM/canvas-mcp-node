@@ -4,6 +4,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CanvasClient } from "../canvasClient.js";
 import { CanvasApiError } from "../types.js";
 import { jsonResult, safeHandler } from "./toolHelpers.js";
+import { READS_CANVAS } from "./annotations.js";
 
 /**
  * Resolve an account_id from the tool argument or the CANVAS_ACCOUNT_ID env var,
@@ -99,6 +100,7 @@ export function registerCourseTools(server: McpServer, canvas: CanvasClient): vo
   server.registerTool(
     "list_courses",
     {
+      annotations: READS_CANVAS,
       description:
         "List all Canvas courses the authenticated user is enrolled in. Output prefers course_code over numeric id per Franklin School conventions.",
       inputSchema: LIST_COURSES_INPUT,
@@ -129,6 +131,7 @@ export function registerCourseTools(server: McpServer, canvas: CanvasClient): vo
   server.registerTool(
     "list_account_courses",
     {
+      annotations: READS_CANVAS,
       description:
         "Search the full course catalog at the account level. Requires account-admin scope on the Canvas token. Defaults account_id from CANVAS_ACCOUNT_ID env var when not passed. Returns paginated results with course_code preferred in summary.",
       inputSchema: LIST_ACCOUNT_COURSES_INPUT,
@@ -205,6 +208,7 @@ export function registerCourseTools(server: McpServer, canvas: CanvasClient): vo
   server.registerTool(
     "get_course_details",
     {
+      annotations: READS_CANVAS,
       description:
         "Fetch detailed information for a single Canvas course. Accepts either a course code or numeric id.",
       inputSchema: GET_COURSE_DETAILS_INPUT,

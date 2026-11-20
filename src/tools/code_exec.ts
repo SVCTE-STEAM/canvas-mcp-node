@@ -7,6 +7,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 import type { Anonymizer } from "../anonymizer.js";
 import { jsonResult, safeHandler, textResult } from "./toolHelpers.js";
+import { READS_LOCAL, RUNS_CODE } from "./annotations.js";
 
 /**
  * Resolve tsx/esm to an absolute file URL once at module load.
@@ -131,6 +132,7 @@ export function registerCodeExecutionTools(server: McpServer, anonymizer: Anonym
   server.registerTool(
     "execute_typescript",
     {
+      annotations: RUNS_CODE,
       description:
         "Run a snippet of TypeScript in an isolated worker_thread. User code can import from the lifted code_api/ modules — including the FERPA-safe ./anonymizer.js adapter that pseudonymizes student data the same way the typed tools do. Network outbound is blocked by default except to the Canvas host (set via TS_SANDBOX_ALLOWLIST_HOSTS). Crashes, infinite loops, and OOM stay isolated to the worker and never take down the MCP.",
       inputSchema: EXECUTE_TYPESCRIPT_INPUT,
@@ -173,6 +175,7 @@ export function registerCodeExecutionTools(server: McpServer, anonymizer: Anonym
   server.registerTool(
     "list_code_api_modules",
     {
+      annotations: READS_LOCAL,
       description:
         "List the modules importable from inside execute_typescript user code (and the symbols they export). Use this to discover what's available before writing a snippet.",
       inputSchema: {},

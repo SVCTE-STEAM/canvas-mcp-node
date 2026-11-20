@@ -7,6 +7,7 @@ import { CanvasApiError } from "../types.js";
 import { DEANON_DENIED_NOTE, resolveAnonymous } from "../featureFlags.js";
 import { jsonResult, safeHandler } from "./toolHelpers.js";
 import { buildCourseScrubber, type CourseScrubber } from "./discussionAnonymizer.js";
+import { READS_CANVAS } from "./annotations.js";
 
 export const GROUP_NAME_SCRUB_NOTE =
   "Group names are scrubbed of roster names on a best-effort basis (self-signup groups are named by students); " +
@@ -185,7 +186,7 @@ export function registerGroupTools(server: McpServer, canvas: CanvasClient, anon
         "List a course's groups with their members (id + name). Student members are pseudonymized by default (FERPA gate) with the same per-course pseudonyms as list_users; " +
         "staff keep their names; roster names are scrubbed from group names. Emails are not returned.",
       inputSchema: LIST_GROUPS_INPUT,
-      annotations: { readOnlyHint: true },
+      annotations: READS_CANVAS,
     },
     async (input) => {
       const args = input as z.infer<z.ZodObject<typeof LIST_GROUPS_INPUT>>;
@@ -271,7 +272,7 @@ export function registerGroupTools(server: McpServer, canvas: CanvasClient, anon
         "Never returns the roster or any name. Needs a token with roster-admin rights; without them Canvas silently withholds login ids and the answer is INDETERMINATE, never NO. " +
         "role defaults to student; a NO names any other role the person holds — pass role='any' to ask about the course at all.",
       inputSchema: CHECK_ENROLLMENT_INPUT,
-      annotations: { readOnlyHint: true },
+      annotations: READS_CANVAS,
     },
     async (input) => {
       const args = input as z.infer<z.ZodObject<typeof CHECK_ENROLLMENT_INPUT>>;

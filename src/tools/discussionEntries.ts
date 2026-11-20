@@ -18,6 +18,7 @@ import {
   consumeConfirmationToken,
   previewResult,
 } from "./confirmGate.js";
+import { READS_CANVAS } from "./annotations.js";
 
 const ENTRY_PREVIEW_CHARS = 300;
 const REPLY_PREVIEW_CHARS = 200;
@@ -345,7 +346,7 @@ export function registerDiscussionEntryTools(
         "Student authors are pseudonymized and roster names scrubbed from bodies by default (FERPA gate); author user_ids are real so they cross-reference with list_users. " +
         "Use get_discussion_entry_details for one entry in full.",
       inputSchema: LIST_ENTRIES_INPUT,
-      annotations: { readOnlyHint: true },
+      annotations: READS_CANVAS,
     },
     async (input) => {
       const args = input as z.infer<z.ZodObject<typeof LIST_ENTRIES_INPUT>>;
@@ -482,7 +483,7 @@ export function registerDiscussionEntryTools(
         "Read one discussion entry in full (complete text, timestamps, read state) plus, by default, all of its replies. " +
         "Student authors are pseudonymized and roster names scrubbed by default (FERPA gate).",
       inputSchema: ENTRY_DETAILS_INPUT,
-      annotations: { readOnlyHint: true },
+      annotations: READS_CANVAS,
     },
     async (input) => {
       const args = input as z.infer<z.ZodObject<typeof ENTRY_DETAILS_INPUT>>;

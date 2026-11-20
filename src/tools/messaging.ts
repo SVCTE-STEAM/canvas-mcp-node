@@ -22,6 +22,7 @@ import {
   type CourseScrubber,
   type NameReplacement,
 } from "./discussionAnonymizer.js";
+import { CREATES, MARKS, READS_CANVAS } from "./annotations.js";
 
 export const CONVERSATION_SCRUB_NOTE =
   "Conversation participants who are not course staff (or you) are pseudonymized, and roster/participant " +
@@ -363,6 +364,7 @@ export function registerMessagingTools(
   server.registerTool(
     "send_conversation",
     {
+      annotations: CREATES,
       description:
         "Send a Canvas Inbox message to students/staff in a course. Each recipient gets their own private conversation (students never see each other). " +
         "TWO-STEP: the first call (no confirmation_token) only returns a PREVIEW (recipients as pseudonyms, subject/body) plus a token; nothing is sent. " +
@@ -416,6 +418,7 @@ export function registerMessagingTools(
   server.registerTool(
     "send_bulk_messages_from_list",
     {
+      annotations: CREATES,
       description:
         "Send a different private Canvas Inbox message to each student in a course, one row per recipient ({user_id, subject, body}). " +
         "TWO-STEP: the first call (no confirmation_token) returns a PREVIEW of every row (recipients as pseudonyms) plus a token; nothing is sent. " +
@@ -501,6 +504,7 @@ export function registerMessagingTools(
   server.registerTool(
     "list_conversations",
     {
+      annotations: READS_CANVAS,
       description:
         "List the teacher's Canvas Inbox conversations (one page, newest first; more_available says whether Canvas has more). " +
         "Returns id, subject, last_message preview, workflow_state, course_code, and participants. Non-staff participants are pseudonymized and names scrubbed from subjects/previews by default (FERPA gate).",
@@ -576,6 +580,7 @@ export function registerMessagingTools(
   server.registerTool(
     "get_conversation_details",
     {
+      annotations: READS_CANVAS,
       description:
         "Fetch one Canvas Inbox conversation with its messages. Viewing never marks it read (use mark_conversations_read). " +
         "Non-staff participants are pseudonymized and names scrubbed from subject and message bodies by default (FERPA gate).",
@@ -629,6 +634,7 @@ export function registerMessagingTools(
   server.registerTool(
     "get_unread_count",
     {
+      annotations: READS_CANVAS,
       description: "Number of unread conversations in the teacher's Canvas Inbox.",
       inputSchema: {},
     },
@@ -645,6 +651,7 @@ export function registerMessagingTools(
   server.registerTool(
     "mark_conversations_read",
     {
+      annotations: MARKS,
       description:
         "Mark Canvas Inbox conversations as read (affects only the teacher's own inbox). Canvas applies the change asynchronously and returns a progress record.",
       inputSchema: MARK_CONVERSATIONS_READ_INPUT,

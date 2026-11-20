@@ -7,6 +7,7 @@ import { CanvasApiError } from "../types.js";
 import { DEANON_DENIED_NOTE, resolveAnonymous } from "../featureFlags.js";
 import { jsonResult, safeHandler } from "./toolHelpers.js";
 import { fetchStudentRoster } from "./roster.js";
+import { READS_CANVAS } from "./annotations.js";
 
 const NUMERIC_ID = /^\d+$/;
 const LOW_SCORE_PCT = 70;
@@ -173,6 +174,7 @@ export function registerAnalyticsTools(
   server.registerTool(
     "get_assignment_analytics",
     {
+      annotations: READS_CANVAS,
       description:
         "Performance analytics for one assignment: submission/on-time/late/missing/excused counts, score statistics (mean, median, min, max, stdev), grade-distribution buckets, and the students without a submission or scoring below 70%. " +
         "Counts cover students on the course roster only (Test Student excluded). Student names are pseudonymized by default (FERPA gate).",
@@ -334,6 +336,7 @@ export function registerAnalyticsTools(
   server.registerTool(
     "get_student_analytics",
     {
+      annotations: READS_CANVAS,
       description:
         "Per-student engagement analytics from Canvas Analytics (student_summaries): page views, participations, on-time/late/missing counts, submit rate, current score, and an engagement score " +
         "(0.4 x page-view % of course max + 0.4 x participation % of max + 0.2 x submit rate). Sorted lowest engagement first to surface disengaged students. " +
